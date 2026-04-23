@@ -1,4 +1,4 @@
-import '../../domain/entities/recent_transaction.dart';
+import 'package:bank_go/features/dashboard/domain/entities/recent_transaction.dart';
 
 class RecentTransactionModel extends RecentTransaction {
   const RecentTransactionModel({

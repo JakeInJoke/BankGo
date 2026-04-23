@@ -1,4 +1,4 @@
-import '../../domain/entities/transaction.dart';
+import 'package:bank_go/features/transactions/domain/entities/transaction.dart';
 
 class TransactionModel extends Transaction {
   const TransactionModel({

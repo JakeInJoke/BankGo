@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
-import '../../../../core/errors/exceptions.dart';
-import '../models/user_model.dart';
+import 'package:bank_go/core/errors/exceptions.dart';
+import 'package:bank_go/features/auth/data/models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
   Future<UserModel> login({required String email, required String password});

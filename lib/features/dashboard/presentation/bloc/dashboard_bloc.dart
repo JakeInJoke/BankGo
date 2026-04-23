@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../domain/usecases/get_account_summary_usecase.dart';
-import '../../domain/usecases/get_recent_transactions_usecase.dart';
-import 'dashboard_event.dart';
-import 'dashboard_state.dart';
+import 'package:bank_go/features/dashboard/domain/usecases/get_account_summary_usecase.dart';
+import 'package:bank_go/features/dashboard/domain/usecases/get_recent_transactions_usecase.dart';
+import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_event.dart';
+import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_state.dart';
 
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   final GetAccountSummaryUseCase getAccountSummaryUseCase;

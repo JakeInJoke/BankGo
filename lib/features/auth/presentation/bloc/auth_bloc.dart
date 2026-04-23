@@ -1,10 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../domain/usecases/get_cached_user_usecase.dart';
-import '../../domain/usecases/login_usecase.dart';
-import '../../domain/usecases/logout_usecase.dart';
-import 'auth_event.dart';
-import 'auth_state.dart';
+import 'package:bank_go/features/auth/domain/usecases/get_cached_user_usecase.dart';
+import 'package:bank_go/features/auth/domain/usecases/login_usecase.dart';
+import 'package:bank_go/features/auth/domain/usecases/logout_usecase.dart';
+import 'package:bank_go/features/auth/presentation/bloc/auth_event.dart';
+import 'package:bank_go/features/auth/presentation/bloc/auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LoginUseCase loginUseCase;

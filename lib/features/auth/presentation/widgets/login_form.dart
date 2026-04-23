@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_dimensions.dart';
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/utils/validators.dart';
-import '../bloc/auth_bloc.dart';
-import '../bloc/auth_event.dart';
-import '../bloc/auth_state.dart';
-import 'custom_text_field.dart';
+import 'package:bank_go/core/constants/app_colors.dart';
+import 'package:bank_go/core/constants/app_dimensions.dart';
+import 'package:bank_go/core/constants/app_strings.dart';
+import 'package:bank_go/core/utils/validators.dart';
+import 'package:bank_go/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:bank_go/features/auth/presentation/bloc/auth_event.dart';
+import 'package:bank_go/features/auth/presentation/bloc/auth_state.dart';
+import 'package:bank_go/features/auth/presentation/widgets/custom_text_field.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -83,7 +83,7 @@ class _LoginFormState extends State<LoginForm> {
                 onPressed: isLoading ? null : _onSubmit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                  disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.6),
                 ),
                 child: isLoading
                     ? const SizedBox(

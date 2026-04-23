@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../constants/app_colors.dart';
-import '../constants/app_dimensions.dart';
+import 'package:bank_go/core/constants/app_colors.dart';
+import 'package:bank_go/core/constants/app_dimensions.dart';
 
 class AppTheme {
   AppTheme._();

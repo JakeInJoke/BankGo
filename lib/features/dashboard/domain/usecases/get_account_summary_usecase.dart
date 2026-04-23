@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/errors/failures.dart';
-import '../entities/account_summary.dart';
-import '../repositories/dashboard_repository.dart';
+import 'package:bank_go/core/errors/failures.dart';
+import 'package:bank_go/features/dashboard/domain/entities/account_summary.dart';
+import 'package:bank_go/features/dashboard/domain/repositories/dashboard_repository.dart';
 
 class GetAccountSummaryUseCase {
   final DashboardRepository repository;

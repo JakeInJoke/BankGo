@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-import '../errors/exceptions.dart';
+import 'package:bank_go/core/errors/exceptions.dart';
 
 class DioInterceptor extends Interceptor {
   final String? Function() getAccessToken;

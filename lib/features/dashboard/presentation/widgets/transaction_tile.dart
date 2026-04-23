@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_dimensions.dart';
-import '../../../../core/utils/currency_formatter.dart';
-import '../../../../core/utils/date_formatter.dart';
-import '../../domain/entities/recent_transaction.dart';
+import 'package:bank_go/core/constants/app_colors.dart';
+import 'package:bank_go/core/constants/app_dimensions.dart';
+import 'package:bank_go/core/utils/currency_formatter.dart';
+import 'package:bank_go/core/utils/date_formatter.dart';
+import 'package:bank_go/features/dashboard/domain/entities/recent_transaction.dart';
 
 class TransactionTile extends StatelessWidget {
   final RecentTransaction transaction;
@@ -23,7 +23,7 @@ class TransactionTile extends StatelessWidget {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: color.withOpacity(0.12),
+          color: color.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
         ),
         child: Icon(icon, color: color, size: AppDimensions.iconMD),
@@ -43,7 +43,8 @@ class TransactionTile extends StatelessWidget {
       trailing: Text(
         amountText,
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: transaction.isIncome ? AppColors.income : AppColors.expense,
+              color:
+                  transaction.isIncome ? AppColors.income : AppColors.expense,
               fontWeight: FontWeight.w600,
             ),
       ),

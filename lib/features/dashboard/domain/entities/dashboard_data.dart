@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-import '../entities/account_summary.dart';
-import '../entities/recent_transaction.dart';
+import 'package:bank_go/features/dashboard/domain/entities/account_summary.dart';
+import 'package:bank_go/features/dashboard/domain/entities/recent_transaction.dart';
 
 class DashboardData extends Equatable {
   final AccountSummary accountSummary;

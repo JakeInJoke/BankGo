@@ -1,11 +1,11 @@
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/errors/exceptions.dart';
-import '../../../../core/errors/failures.dart';
-import '../../../../core/network/network_info.dart';
-import '../../domain/entities/transaction.dart';
-import '../../domain/repositories/transactions_repository.dart';
-import '../datasources/transactions_remote_datasource.dart';
+import 'package:bank_go/core/errors/exceptions.dart';
+import 'package:bank_go/core/errors/failures.dart';
+import 'package:bank_go/core/network/network_info.dart';
+import 'package:bank_go/features/transactions/domain/entities/transaction.dart';
+import 'package:bank_go/features/transactions/domain/repositories/transactions_repository.dart';
+import 'package:bank_go/features/transactions/data/datasources/transactions_remote_datasource.dart';
 
 class TransactionsRepositoryImpl implements TransactionsRepository {
   final TransactionsRemoteDataSource remoteDataSource;

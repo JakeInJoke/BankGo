@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/errors/failures.dart';
-import '../entities/transaction.dart';
+import 'package:bank_go/core/errors/failures.dart';
+import 'package:bank_go/features/transactions/domain/entities/transaction.dart';
 
 abstract class TransactionsRepository {
   Future<Either<Failure, List<Transaction>>> getTransactions({
