@@ -1,6 +1,5 @@
-import 'package:dio/dio.dart';
-
 import 'package:bank_go/core/errors/exceptions.dart';
+import 'package:bank_go/core/mocks/mock_bank_api.dart';
 import 'package:bank_go/features/dashboard/data/models/account_summary_model.dart';
 import 'package:bank_go/features/dashboard/data/models/recent_transaction_model.dart';
 
@@ -10,23 +9,17 @@ abstract class DashboardRemoteDataSource {
 }
 
 class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
-  final Dio dio;
+  final MockBankApi mockBankApi;
 
-  const DashboardRemoteDataSourceImpl({required this.dio});
+  const DashboardRemoteDataSourceImpl({required this.mockBankApi});
 
   @override
   Future<AccountSummaryModel> getAccountSummary() async {
     try {
-      // TODO: Replace with real endpoint once API is ready.
-      // final response = await dio.get('/dashboard/summary');
-      // return AccountSummaryModel.fromJson(response.data);
-      await Future.delayed(const Duration(milliseconds: 800));
-      return AccountSummaryModel.placeholder();
-    } on DioException catch (e) {
-      throw ServerException(
-        message: e.message ?? 'Error al obtener resumen',
-        statusCode: e.response?.statusCode,
-      );
+      final response = await mockBankApi.getAccountSummary();
+      return AccountSummaryModel.fromJson(response);
+    } catch (_) {
+      throw const ServerException(message: 'Error al obtener resumen');
     }
   }
 
@@ -35,16 +28,10 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
     int limit = 5,
   }) async {
     try {
-      // TODO: Replace with real endpoint once API is ready.
-      // final response = await dio.get('/dashboard/transactions', queryParameters: {'limit': limit});
-      // return (response.data as List).map((e) => RecentTransactionModel.fromJson(e)).toList();
-      await Future.delayed(const Duration(milliseconds: 600));
-      return RecentTransactionModel.placeholders().take(limit).toList();
-    } on DioException catch (e) {
-      throw ServerException(
-        message: e.message ?? 'Error al obtener transacciones',
-        statusCode: e.response?.statusCode,
-      );
+      final response = await mockBankApi.getRecentTransactions(limit: limit);
+      return response.map(RecentTransactionModel.fromJson).toList();
+    } catch (_) {
+      throw const ServerException(message: 'Error al obtener transacciones');
     }
   }
 }
