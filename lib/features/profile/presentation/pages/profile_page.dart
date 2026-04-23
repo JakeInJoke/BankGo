@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_dimensions.dart';
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/routes/app_router.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
-import '../../../auth/presentation/bloc/auth_event.dart';
-import '../../../auth/presentation/bloc/auth_state.dart';
+import 'package:bank_go/core/constants/app_colors.dart';
+import 'package:bank_go/core/constants/app_dimensions.dart';
+import 'package:bank_go/core/constants/app_strings.dart';
+import 'package:bank_go/core/routes/app_router.dart';
+import 'package:bank_go/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:bank_go/features/auth/presentation/bloc/auth_event.dart';
+import 'package:bank_go/features/auth/presentation/bloc/auth_state.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -104,9 +104,9 @@ class ProfilePage extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: () => _confirmLogout(context),
                     icon: const Icon(Icons.logout, color: AppColors.error),
-                    label: Text(
+                    label: const Text(
                       AppStrings.logout,
-                      style: const TextStyle(color: AppColors.error),
+                      style: TextStyle(color: AppColors.error),
                     ),
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: AppColors.error),
@@ -185,8 +185,7 @@ class ProfilePage extends StatelessWidget {
               context.read<AuthBloc>().add(const AuthLogoutRequested());
               Navigator.pushReplacementNamed(context, AppRouter.login);
             },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.error),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text(AppStrings.logout),
           ),
         ],
@@ -222,7 +221,7 @@ class _ProfileHeader extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: AppDimensions.avatarSizeLG / 2,
-            backgroundColor: AppColors.white.withOpacity(0.2),
+            backgroundColor: AppColors.white.withValues(alpha: 0.2),
             backgroundImage:
                 avatarUrl != null ? NetworkImage(avatarUrl!) : null,
             child: avatarUrl == null
@@ -246,7 +245,7 @@ class _ProfileHeader extends StatelessWidget {
           Text(
             email,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.white.withOpacity(0.8),
+                  color: AppColors.white.withValues(alpha: 0.8),
                 ),
           ),
         ],

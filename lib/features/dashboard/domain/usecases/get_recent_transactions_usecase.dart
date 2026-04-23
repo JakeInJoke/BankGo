@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/errors/failures.dart';
-import '../entities/recent_transaction.dart';
-import '../repositories/dashboard_repository.dart';
+import 'package:bank_go/core/errors/failures.dart';
+import 'package:bank_go/features/dashboard/domain/entities/recent_transaction.dart';
+import 'package:bank_go/features/dashboard/domain/repositories/dashboard_repository.dart';
 
 class GetRecentTransactionsUseCase {
   final DashboardRepository repository;

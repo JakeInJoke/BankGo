@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_dimensions.dart';
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/utils/currency_formatter.dart';
-import '../../../../core/utils/date_formatter.dart';
-import '../../domain/entities/transaction.dart';
-import '../bloc/transactions_bloc.dart';
-import '../bloc/transactions_event.dart';
-import '../bloc/transactions_state.dart';
+import 'package:bank_go/core/constants/app_colors.dart';
+import 'package:bank_go/core/constants/app_dimensions.dart';
+import 'package:bank_go/core/constants/app_strings.dart';
+import 'package:bank_go/core/utils/currency_formatter.dart';
+import 'package:bank_go/core/utils/date_formatter.dart';
+import 'package:bank_go/features/transactions/domain/entities/transaction.dart';
+import 'package:bank_go/features/transactions/presentation/bloc/transactions_bloc.dart';
+import 'package:bank_go/features/transactions/presentation/bloc/transactions_event.dart';
+import 'package:bank_go/features/transactions/presentation/bloc/transactions_state.dart';
 
 class TransactionsPage extends StatelessWidget {
   const TransactionsPage({super.key});
@@ -145,7 +145,8 @@ class _TransactionsView extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.arrow_downward, color: AppColors.income),
+              leading:
+                  const Icon(Icons.arrow_downward, color: AppColors.income),
               title: const Text(AppStrings.income),
               onTap: () {
                 context.read<TransactionsBloc>().add(
@@ -157,8 +158,7 @@ class _TransactionsView extends StatelessWidget {
               },
             ),
             ListTile(
-              leading:
-                  const Icon(Icons.arrow_upward, color: AppColors.expense),
+              leading: const Icon(Icons.arrow_upward, color: AppColors.expense),
               title: const Text(AppStrings.expense),
               onTap: () {
                 context.read<TransactionsBloc>().add(
@@ -170,8 +170,7 @@ class _TransactionsView extends StatelessWidget {
               },
             ),
             ListTile(
-              leading:
-                  const Icon(Icons.swap_horiz, color: AppColors.transfer),
+              leading: const Icon(Icons.swap_horiz, color: AppColors.transfer),
               title: const Text(AppStrings.transfer),
               onTap: () {
                 context.read<TransactionsBloc>().add(
@@ -224,7 +223,7 @@ class _FilterChips extends StatelessWidget {
       onSelected: (_) => context
           .read<TransactionsBloc>()
           .add(TransactionsFilterChanged(type: type)),
-      selectedColor: AppColors.primaryLight.withOpacity(0.2),
+      selectedColor: AppColors.primaryLight.withValues(alpha: 0.2),
       checkmarkColor: AppColors.primary,
       labelStyle: TextStyle(
         color: isSelected ? AppColors.primary : AppColors.grey600,
@@ -253,7 +252,7 @@ class _TransactionItem extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
             ),
             child: Icon(icon, color: color, size: AppDimensions.iconMD),
@@ -347,7 +346,7 @@ class _StatusBadge extends StatelessWidget {
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppDimensions.radiusXS),
       ),
       child: Text(

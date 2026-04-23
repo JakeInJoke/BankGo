@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 
-import '../../../../core/errors/exceptions.dart';
-import '../../domain/entities/transaction.dart';
-import '../models/transaction_model.dart';
+import 'package:bank_go/core/errors/exceptions.dart';
+import 'package:bank_go/features/transactions/domain/entities/transaction.dart';
+import 'package:bank_go/features/transactions/data/models/transaction_model.dart';
 
 abstract class TransactionsRemoteDataSource {
   Future<List<TransactionModel>> getTransactions({
@@ -31,9 +31,8 @@ class TransactionsRemoteDataSourceImpl implements TransactionsRemoteDataSource {
       // TODO: Replace with real endpoint once API is ready.
       await Future.delayed(const Duration(milliseconds: 700));
       final all = TransactionModel.placeholders();
-      final filtered = type != null
-          ? all.where((t) => t.type == type).toList()
-          : all;
+      final filtered =
+          type != null ? all.where((t) => t.type == type).toList() : all;
       return filtered.take(limit).toList();
     } on DioException catch (e) {
       throw ServerException(

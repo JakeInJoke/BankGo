@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/routes/app_router.dart';
-import '../bloc/auth_bloc.dart';
-import '../bloc/auth_event.dart';
-import '../bloc/auth_state.dart';
+import 'package:bank_go/core/constants/app_colors.dart';
+import 'package:bank_go/core/constants/app_strings.dart';
+import 'package:bank_go/core/routes/app_router.dart';
+import 'package:bank_go/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:bank_go/features/auth/presentation/bloc/auth_event.dart';
+import 'package:bank_go/features/auth/presentation/bloc/auth_state.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -89,7 +89,7 @@ class _SplashPageState extends State<SplashPage>
                   Text(
                     AppStrings.appTagline,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.white.withOpacity(0.8),
+                          color: AppColors.white.withValues(alpha: 0.8),
                         ),
                   ),
                   const SizedBox(height: 48),

@@ -1,4 +1,4 @@
-import '../../domain/entities/account.dart';
+import 'package:bank_go/features/accounts/domain/entities/account.dart';
 
 class AccountModel extends Account {
   const AccountModel({

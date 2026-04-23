@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_dimensions.dart';
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/utils/currency_formatter.dart';
-import '../../data/models/account_model.dart';
-import '../../domain/entities/account.dart';
+import 'package:bank_go/core/constants/app_colors.dart';
+import 'package:bank_go/core/constants/app_dimensions.dart';
+import 'package:bank_go/core/constants/app_strings.dart';
+import 'package:bank_go/core/utils/currency_formatter.dart';
+import 'package:bank_go/features/accounts/data/models/account_model.dart';
+import 'package:bank_go/features/accounts/domain/entities/account.dart';
 
 class AccountsPage extends StatelessWidget {
   const AccountsPage({super.key});
@@ -31,8 +31,7 @@ class AccountsPage extends StatelessWidget {
         itemCount: accounts.length,
         itemBuilder: (context, index) {
           return Padding(
-            padding:
-                const EdgeInsets.only(bottom: AppDimensions.spaceMD),
+            padding: const EdgeInsets.only(bottom: AppDimensions.spaceMD),
             child: _AccountCard(account: accounts[index]),
           );
         },
@@ -56,7 +55,7 @@ class _AccountCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
         boxShadow: [
           BoxShadow(
-            color: _primaryColorForType(account.type).withOpacity(0.3),
+            color: _primaryColorForType(account.type).withValues(alpha: 0.3),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -81,7 +80,7 @@ class _AccountCard extends StatelessWidget {
                   Text(
                     _labelForType(account.type),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.white.withOpacity(0.7),
+                          color: AppColors.white.withValues(alpha: 0.7),
                         ),
                   ),
                 ],
@@ -90,7 +89,7 @@ class _AccountCard extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: AppColors.white.withOpacity(0.2),
+                  color: AppColors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
                 ),
                 child: Icon(icon, color: AppColors.white),
@@ -112,7 +111,7 @@ class _AccountCard extends StatelessWidget {
               Text(
                 account.maskedNumber,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.white.withOpacity(0.8),
+                      color: AppColors.white.withValues(alpha: 0.8),
                       letterSpacing: 2,
                     ),
               ),
@@ -123,9 +122,8 @@ class _AccountCard extends StatelessWidget {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.white.withOpacity(0.2),
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.radiusXS),
+                    color: AppColors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusXS),
                   ),
                   child: Text(
                     'Principal',

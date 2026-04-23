@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../domain/usecases/get_transactions_usecase.dart';
-import 'transactions_event.dart';
-import 'transactions_state.dart';
+import 'package:bank_go/features/transactions/domain/usecases/get_transactions_usecase.dart';
+import 'package:bank_go/features/transactions/presentation/bloc/transactions_event.dart';
+import 'package:bank_go/features/transactions/presentation/bloc/transactions_state.dart';
 
 class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   final GetTransactionsUseCase getTransactionsUseCase;

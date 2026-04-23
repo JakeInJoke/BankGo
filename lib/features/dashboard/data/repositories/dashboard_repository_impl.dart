@@ -1,12 +1,12 @@
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/errors/exceptions.dart';
-import '../../../../core/errors/failures.dart';
-import '../../../../core/network/network_info.dart';
-import '../../domain/entities/account_summary.dart';
-import '../../domain/entities/recent_transaction.dart';
-import '../../domain/repositories/dashboard_repository.dart';
-import '../datasources/dashboard_remote_datasource.dart';
+import 'package:bank_go/core/errors/exceptions.dart';
+import 'package:bank_go/core/errors/failures.dart';
+import 'package:bank_go/core/network/network_info.dart';
+import 'package:bank_go/features/dashboard/domain/entities/account_summary.dart';
+import 'package:bank_go/features/dashboard/domain/entities/recent_transaction.dart';
+import 'package:bank_go/features/dashboard/domain/repositories/dashboard_repository.dart';
+import 'package:bank_go/features/dashboard/data/datasources/dashboard_remote_datasource.dart';
 
 class DashboardRepositoryImpl implements DashboardRepository {
   final DashboardRemoteDataSource remoteDataSource;

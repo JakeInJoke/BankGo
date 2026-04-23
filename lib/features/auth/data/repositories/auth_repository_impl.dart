@@ -1,13 +1,12 @@
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/errors/exceptions.dart';
-import '../../../../core/errors/failures.dart';
-import '../../../../core/network/network_info.dart';
-import '../../domain/entities/user.dart';
-import '../../domain/repositories/auth_repository.dart';
-import '../datasources/auth_local_datasource.dart';
-import '../datasources/auth_remote_datasource.dart';
-import '../models/user_model.dart';
+import 'package:bank_go/core/errors/exceptions.dart';
+import 'package:bank_go/core/errors/failures.dart';
+import 'package:bank_go/core/network/network_info.dart';
+import 'package:bank_go/features/auth/domain/entities/user.dart';
+import 'package:bank_go/features/auth/domain/repositories/auth_repository.dart';
+import 'package:bank_go/features/auth/data/datasources/auth_local_datasource.dart';
+import 'package:bank_go/features/auth/data/datasources/auth_remote_datasource.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;

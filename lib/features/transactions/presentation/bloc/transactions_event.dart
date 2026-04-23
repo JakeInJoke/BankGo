@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../domain/entities/transaction.dart';
+import 'package:bank_go/features/transactions/domain/entities/transaction.dart';
 
 abstract class TransactionsEvent extends Equatable {
   const TransactionsEvent();

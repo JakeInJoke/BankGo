@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_dimensions.dart';
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/utils/currency_formatter.dart';
-import '../../domain/entities/account_summary.dart';
+import 'package:bank_go/core/constants/app_colors.dart';
+import 'package:bank_go/core/constants/app_dimensions.dart';
+import 'package:bank_go/core/constants/app_strings.dart';
+import 'package:bank_go/core/utils/currency_formatter.dart';
+import 'package:bank_go/features/dashboard/domain/entities/account_summary.dart';
 
 class AccountCard extends StatelessWidget {
   final AccountSummary summary;
@@ -24,7 +24,7 @@ class AccountCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.4),
+            color: AppColors.primary.withValues(alpha: 0.4),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -51,7 +51,7 @@ class AccountCard extends StatelessWidget {
         Text(
           summary.accountType,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.white.withOpacity(0.8),
+                color: AppColors.white.withValues(alpha: 0.8),
               ),
         ),
         const Icon(
@@ -70,7 +70,7 @@ class AccountCard extends StatelessWidget {
         Text(
           AppStrings.totalBalance,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.white.withOpacity(0.7),
+                color: AppColors.white.withValues(alpha: 0.7),
               ),
         ),
         const SizedBox(height: AppDimensions.spaceXXS),
@@ -92,7 +92,7 @@ class AccountCard extends StatelessWidget {
         Text(
           summary.accountNumber,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.white.withOpacity(0.8),
+                color: AppColors.white.withValues(alpha: 0.8),
                 letterSpacing: 2,
               ),
         ),
@@ -106,7 +106,7 @@ class AccountCard extends StatelessWidget {
                   height: 10,
                   decoration: BoxDecoration(
                     color: i < 2
-                        ? AppColors.white.withOpacity(0.6)
+                        ? AppColors.white.withValues(alpha: 0.6)
                         : AppColors.white,
                     shape: BoxShape.circle,
                   ),

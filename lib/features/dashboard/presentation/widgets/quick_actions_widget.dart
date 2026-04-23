@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_dimensions.dart';
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/routes/app_router.dart';
+import 'package:bank_go/core/constants/app_colors.dart';
+import 'package:bank_go/core/constants/app_dimensions.dart';
+import 'package:bank_go/core/constants/app_strings.dart';
+import 'package:bank_go/core/routes/app_router.dart';
 
 class QuickActionsWidget extends StatelessWidget {
   const QuickActionsWidget({super.key});
@@ -71,7 +71,7 @@ class _QuickActionButton extends StatelessWidget {
             width: AppDimensions.quickActionSize,
             height: AppDimensions.quickActionSize,
             decoration: BoxDecoration(
-              color: action.color.withOpacity(0.12),
+              color: action.color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
             ),
             child: Icon(

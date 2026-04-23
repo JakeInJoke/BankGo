@@ -3,19 +3,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_dimensions.dart';
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/routes/app_router.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
-import '../../../auth/presentation/bloc/auth_event.dart';
-import '../../../auth/presentation/bloc/auth_state.dart';
-import '../bloc/dashboard_bloc.dart';
-import '../bloc/dashboard_event.dart';
-import '../bloc/dashboard_state.dart';
-import '../widgets/account_card.dart';
-import '../widgets/quick_actions_widget.dart';
-import '../widgets/transaction_tile.dart';
+import 'package:bank_go/core/constants/app_colors.dart';
+import 'package:bank_go/core/constants/app_dimensions.dart';
+import 'package:bank_go/core/constants/app_strings.dart';
+import 'package:bank_go/core/routes/app_router.dart';
+import 'package:bank_go/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:bank_go/features/auth/presentation/bloc/auth_event.dart';
+import 'package:bank_go/features/auth/presentation/bloc/auth_state.dart';
+import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_event.dart';
+import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_state.dart';
+import 'package:bank_go/features/dashboard/presentation/widgets/account_card.dart';
+import 'package:bank_go/features/dashboard/presentation/widgets/quick_actions_widget.dart';
+import 'package:bank_go/features/dashboard/presentation/widgets/transaction_tile.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -23,8 +23,8 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => GetIt.instance<DashboardBloc>()
-        ..add(const DashboardLoadRequested()),
+      create: (_) =>
+          GetIt.instance<DashboardBloc>()..add(const DashboardLoadRequested()),
       child: const _DashboardView(),
     );
   }
@@ -104,8 +104,7 @@ class _DashboardView extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentTransactions(
-      BuildContext context, DashboardLoaded state) {
+  Widget _buildRecentTransactions(BuildContext context, DashboardLoaded state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

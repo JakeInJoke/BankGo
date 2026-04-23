@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../features/auth/presentation/pages/login_page.dart';
-import '../../features/auth/presentation/pages/splash_page.dart';
-import '../../features/dashboard/presentation/pages/dashboard_page.dart';
-import '../../features/accounts/presentation/pages/accounts_page.dart';
-import '../../features/transactions/presentation/pages/transactions_page.dart';
-import '../../features/profile/presentation/pages/profile_page.dart';
+import 'package:bank_go/features/auth/presentation/pages/login_page.dart';
+import 'package:bank_go/features/auth/presentation/pages/splash_page.dart';
+import 'package:bank_go/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:bank_go/features/accounts/presentation/pages/accounts_page.dart';
+import 'package:bank_go/features/transactions/presentation/pages/transactions_page.dart';
+import 'package:bank_go/features/profile/presentation/pages/profile_page.dart';
 
 class AppRouter {
   AppRouter._();

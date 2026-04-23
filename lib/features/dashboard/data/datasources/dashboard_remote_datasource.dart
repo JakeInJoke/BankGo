@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 
-import '../../../../core/errors/exceptions.dart';
-import '../models/account_summary_model.dart';
-import '../models/recent_transaction_model.dart';
+import 'package:bank_go/core/errors/exceptions.dart';
+import 'package:bank_go/features/dashboard/data/models/account_summary_model.dart';
+import 'package:bank_go/features/dashboard/data/models/recent_transaction_model.dart';
 
 abstract class DashboardRemoteDataSource {
   Future<AccountSummaryModel> getAccountSummary();
