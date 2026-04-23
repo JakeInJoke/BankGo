@@ -1,0 +1,107 @@
+import 'package:flutter/material.dart';
+
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_dimensions.dart';
+import '../../../../core/constants/app_strings.dart';
+import '../../../../core/routes/app_router.dart';
+
+class QuickActionsWidget extends StatelessWidget {
+  const QuickActionsWidget({super.key});
+
+  static const List<_QuickAction> _actions = [
+    _QuickAction(
+      label: AppStrings.sendMoney,
+      icon: Icons.send_rounded,
+      color: AppColors.primary,
+      route: AppRouter.transactions,
+    ),
+    _QuickAction(
+      label: AppStrings.requestMoney,
+      icon: Icons.call_received_rounded,
+      color: AppColors.accent,
+      route: AppRouter.transactions,
+    ),
+    _QuickAction(
+      label: AppStrings.payBills,
+      icon: Icons.receipt_long_rounded,
+      color: AppColors.warning,
+      route: AppRouter.transactions,
+    ),
+    _QuickAction(
+      label: AppStrings.topUp,
+      icon: Icons.add_card_rounded,
+      color: AppColors.secondary,
+      route: AppRouter.accounts,
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppStrings.quickActions,
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: AppDimensions.spaceMD),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: _actions
+              .map((action) => _QuickActionButton(action: action))
+              .toList(),
+        ),
+      ],
+    );
+  }
+}
+
+class _QuickActionButton extends StatelessWidget {
+  final _QuickAction action;
+
+  const _QuickActionButton({required this.action});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, action.route),
+      child: Column(
+        children: [
+          Container(
+            width: AppDimensions.quickActionSize,
+            height: AppDimensions.quickActionSize,
+            decoration: BoxDecoration(
+              color: action.color.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+            ),
+            child: Icon(
+              action.icon,
+              color: action.color,
+              size: AppDimensions.iconLG,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spaceXS),
+          Text(
+            action.label,
+            style: Theme.of(context).textTheme.bodySmall,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickAction {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final String route;
+
+  const _QuickAction({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.route,
+  });
+}
