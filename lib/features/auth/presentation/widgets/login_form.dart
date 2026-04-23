@@ -83,7 +83,8 @@ class _LoginFormState extends State<LoginForm> {
                 onPressed: isLoading ? null : _onSubmit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.6),
+                  disabledBackgroundColor:
+                      AppColors.primary.withValues(alpha: 0.6),
                 ),
                 child: isLoading
                     ? const SizedBox(
