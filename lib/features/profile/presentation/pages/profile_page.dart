@@ -104,9 +104,9 @@ class ProfilePage extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: () => _confirmLogout(context),
                     icon: const Icon(Icons.logout, color: AppColors.error),
-                    label: Text(
+                    label: const Text(
                       AppStrings.logout,
-                      style: const TextStyle(color: AppColors.error),
+                      style: TextStyle(color: AppColors.error),
                     ),
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: AppColors.error),

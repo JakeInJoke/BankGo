@@ -31,7 +31,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        throw UnauthorizedException();
+        throw const UnauthorizedException();
       }
       throw ServerException(
         message: e.message ?? 'Error de servidor',

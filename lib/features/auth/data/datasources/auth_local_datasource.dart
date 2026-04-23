@@ -22,7 +22,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<UserModel> getCachedUser() async {
     final jsonString = sharedPreferences.getString(_kCachedUser);
     if (jsonString == null) {
-      throw CacheException(message: 'No hay usuario en caché');
+      throw const CacheException(message: 'No hay usuario en caché');
     }
     return UserModel.fromJson(
       jsonDecode(jsonString) as Map<String, dynamic>,

@@ -25,13 +25,13 @@ class DioInterceptor extends Interceptor {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        throw TimeoutException(message: 'Tiempo de espera agotado');
+        throw const TimeoutException(message: 'Tiempo de espera agotado');
       case DioExceptionType.connectionError:
-        throw NetworkException(message: 'Error de conexión');
+        throw const NetworkException(message: 'Error de conexión');
       case DioExceptionType.badResponse:
         final statusCode = err.response?.statusCode;
         if (statusCode == 401) {
-          throw UnauthorizedException();
+          throw const UnauthorizedException();
         }
         throw ServerException(
           message: err.response?.data?['message'] ?? 'Error del servidor',
