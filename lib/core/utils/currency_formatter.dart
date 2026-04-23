@@ -18,7 +18,7 @@ class CurrencyFormatter {
 
   /// Formats [amount] in compact notation (e.g., $1.2K)
   static String formatCompact(double amount) {
-    return '\$${_compactFormat.format(amount)}';
+    return '\$${_compactFormat.format(amount).toUpperCase()}';
   }
 
   /// Returns a signed string with + or - prefix
