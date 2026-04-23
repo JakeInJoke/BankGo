@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 
+import 'package:bank_go/core/mocks/mock_bank_api.dart';
 import 'package:bank_go/core/network/network_info.dart';
 import 'package:bank_go/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:bank_go/features/auth/data/datasources/auth_remote_datasource.dart';
@@ -41,6 +42,7 @@ Future<void> init() async {
           },
         ),
       ));
+  sl.registerLazySingleton(() => const MockBankApi());
 
   // ─── Core ─────────────────────────────────────────────────────────────────────
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl());
@@ -68,7 +70,7 @@ Future<void> init() async {
   );
   // Data sources
   sl.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(dio: sl()),
+    () => AuthRemoteDataSourceImpl(mockBankApi: sl()),
   );
   sl.registerLazySingleton<AuthLocalDataSource>(
     () => AuthLocalDataSourceImpl(sharedPreferences: sl()),
@@ -94,7 +96,7 @@ Future<void> init() async {
   );
   // Data sources
   sl.registerLazySingleton<DashboardRemoteDataSource>(
-    () => DashboardRemoteDataSourceImpl(dio: sl()),
+    () => DashboardRemoteDataSourceImpl(mockBankApi: sl()),
   );
 
   // ─── Features: Transactions ───────────────────────────────────────────────────
@@ -113,6 +115,6 @@ Future<void> init() async {
   );
   // Data sources
   sl.registerLazySingleton<TransactionsRemoteDataSource>(
-    () => TransactionsRemoteDataSourceImpl(dio: sl()),
+    () => TransactionsRemoteDataSourceImpl(mockBankApi: sl()),
   );
 }

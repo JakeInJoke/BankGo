@@ -21,3 +21,4 @@ Define visualmente cómo se verán los estados de 'Carga', 'Error', 'Lista vací
 - En los distintos estados deben de aparecer pantallas que hagan referencia al estado en el que pertenecen
 - No olvides colocar el botón de reintentar ni los esqueletos del diseño cuando se encuentre en carga o espera
 - Si la lista está vacía que muestre el mensaje en pantalla correspondiente al dato que se quiso consultar
+- Que nadie se pueda registrar desde la app, ya que todo el proceso previo se hará presencialmente por motivos de seguridad
