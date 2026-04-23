@@ -18,6 +18,18 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+def releaseStoreFilePath = keystoreProperties.getProperty('storeFile')
+def resolvedReleaseStoreFile = null
+if (releaseStoreFilePath != null) {
+    def moduleRelative = file(releaseStoreFilePath)
+    def rootRelative = rootProject.file(releaseStoreFilePath)
+    resolvedReleaseStoreFile = moduleRelative.exists() ? moduleRelative : rootRelative
+}
+def hasReleaseKeystore = keystorePropertiesFile.exists() &&
+        releaseStoreFilePath != null &&
+    resolvedReleaseStoreFile != null &&
+    resolvedReleaseStoreFile.exists()
+
 
 def flutterRoot = localProperties.getProperty('flutter.sdk')
 if (flutterRoot == null) {
@@ -36,7 +48,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace 'com.bankgo.app'
-    compileSdkVersion 34
+    compileSdkVersion 36
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -54,8 +66,8 @@ android {
 
     signingConfigs {
         release {
-            if (keystorePropertiesFile.exists()) {
-                storeFile file(keystoreProperties['storeFile'])
+            if (hasReleaseKeystore) {
+                storeFile resolvedReleaseStoreFile
                 storePassword keystoreProperties['storePassword']
                 keyAlias keystoreProperties['keyAlias']
                 keyPassword keystoreProperties['keyPassword']
@@ -66,18 +78,22 @@ android {
     defaultConfig {
         applicationId 'com.bankgo.app'
         minSdkVersion 29
-        targetSdkVersion 34
+        targetSdkVersion 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            signingConfig hasReleaseKeystore ? signingConfigs.release : signingConfigs.debug
             minifyEnabled false
             shrinkResources false
         }
     }
+}
+
+if (!hasReleaseKeystore) {
+    logger.lifecycle("Release keystore not found. Falling back to debug signing for release builds.")
 }
 
 flutter {

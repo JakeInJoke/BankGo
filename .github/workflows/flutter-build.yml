@@ -84,11 +84,16 @@ jobs:
       - name: Create key.properties
         run: |
           cat > android/key.properties <<'EOF'
-          storeFile=app/keystore/upload-keystore.jks
+          storeFile=keystore/upload-keystore.jks
           storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
           keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
           EOF
+
+      - name: Verify signing files
+        run: |
+          test -f android/key.properties
+          test -f android/app/keystore/upload-keystore.jks
 
       - name: Build AAB (release)
         run: flutter build appbundle --release
