@@ -40,7 +40,8 @@ class AppTheme {
         color: AppColors.white,
         elevation: AppDimensions.cardElevation,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(AppDimensions.radiusLG)),
+          borderRadius:
+              BorderRadius.all(Radius.circular(AppDimensions.radiusLG)),
         ),
         clipBehavior: Clip.antiAlias,
       ),
@@ -49,7 +50,8 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.white,
           elevation: 0,
-          minimumSize: const Size(double.infinity, AppDimensions.buttonHeightMD),
+          minimumSize:
+              const Size(double.infinity, AppDimensions.buttonHeightMD),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
           ),
@@ -63,7 +65,8 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
           side: const BorderSide(color: AppColors.primary),
-          minimumSize: const Size(double.infinity, AppDimensions.buttonHeightMD),
+          minimumSize:
+              const Size(double.infinity, AppDimensions.buttonHeightMD),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
           ),
@@ -150,15 +153,15 @@ class AppTheme {
         primary: AppColors.primaryLight,
         secondary: AppColors.secondaryLight,
         error: AppColors.error,
-        : AppColors.Dark,
+        surface: AppColors.surfaceDark,
         onPrimary: AppColors.white,
         onSecondary: AppColors.white,
-        on: AppColors.white,
+        onSurface: AppColors.white,
       ),
       scaffoldBackgroundColor: AppColors.backgroundDark,
       textTheme: _buildTextTheme(isLight: false),
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.Dark,
+        backgroundColor: AppColors.surfaceDark,
         foregroundColor: AppColors.white,
         elevation: 0,
         centerTitle: false,
@@ -173,7 +176,8 @@ class AppTheme {
         color: AppColors.surfaceDark,
         elevation: AppDimensions.cardElevation,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(AppDimensions.radiusLG)),
+          borderRadius:
+              BorderRadius.all(Radius.circular(AppDimensions.radiusLG)),
         ),
         clipBehavior: Clip.antiAlias,
       ),
