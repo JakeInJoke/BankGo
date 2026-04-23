@@ -36,11 +36,11 @@ class AppTheme {
           fontWeight: FontWeight.w600,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: const CardThemeData(
         color: AppColors.white,
         elevation: AppDimensions.cardElevation,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
+          borderRadius: BorderRadius.all(Radius.circular(AppDimensions.radiusLG)),
         ),
         clipBehavior: Clip.antiAlias,
       ),
@@ -150,15 +150,15 @@ class AppTheme {
         primary: AppColors.primaryLight,
         secondary: AppColors.secondaryLight,
         error: AppColors.error,
-        surface: AppColors.surfaceDark,
+        : AppColors.Dark,
         onPrimary: AppColors.white,
         onSecondary: AppColors.white,
-        onSurface: AppColors.white,
+        on: AppColors.white,
       ),
       scaffoldBackgroundColor: AppColors.backgroundDark,
       textTheme: _buildTextTheme(isLight: false),
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.surfaceDark,
+        backgroundColor: AppColors.Dark,
         foregroundColor: AppColors.white,
         elevation: 0,
         centerTitle: false,
@@ -169,11 +169,11 @@ class AppTheme {
           fontWeight: FontWeight.w600,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: const CardThemeData(
         color: AppColors.surfaceDark,
         elevation: AppDimensions.cardElevation,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
+          borderRadius: BorderRadius.all(Radius.circular(AppDimensions.radiusLG)),
         ),
         clipBehavior: Clip.antiAlias,
       ),
