@@ -1,16 +1,14 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bank_go/core/mocks/mock_bank_api.dart';
-import 'package:bank_go/core/network/network_info.dart';
 import 'package:bank_go/features/accounts/presentation/bloc/card_event.dart';
 import 'package:bank_go/features/accounts/presentation/bloc/card_state.dart';
 
 class CardBloc extends Bloc<CardEvent, CardState> {
   final MockBankApi _api;
-  final NetworkInfo _networkInfo;
   Timer? _cvvTimer;
 
-  CardBloc(this._api, this._networkInfo) : super(const CardState()) {
+  CardBloc(this._api) : super(const CardState()) {
     on<LoadCardDetails>(_onLoadCardDetails);
     on<ToggleCardFreeze>(_onToggleCardFreeze);
     on<ShowSensitiveInfo>(_onShowSensitiveInfo);
@@ -37,16 +35,9 @@ class CardBloc extends Bloc<CardEvent, CardState> {
 
   Future<void> _onRequestFreezeToken(
       RequestFreezeToken event, Emitter<CardState> emit) async {
-    if (!await _networkInfo.isConnected) {
-      emit(state.copyWith(
-        error: 'Sin conexión a internet. No se puede solicitar el token.',
-      ));
-      return;
-    }
-
-    emit(state.copyWith(isLoading: true, error: null));
+    emit(state.copyWith(isLoading: true));
     try {
-      final token = await _api.requestSecurityToken(accountId: event.accountId);
+      final token = await _api.requestSecurityToken();
       emit(state.copyWith(isLoading: false, securityToken: token));
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
@@ -58,10 +49,7 @@ class CardBloc extends Bloc<CardEvent, CardState> {
     emit(state.copyWith(isLoading: true));
     try {
       await _api.toggleCardFreeze(
-        accountId: event.accountId,
-        freeze: event.freeze,
-        token: event.token,
-      );
+          accountId: event.accountId, freeze: event.freeze, token: event.token);
       emit(state.copyWith(
           isLoading: false, isFrozen: event.freeze, securityToken: null));
     } catch (e) {
@@ -83,7 +71,7 @@ class CardBloc extends Bloc<CardEvent, CardState> {
 
     emit(state.copyWith(isLoading: true, error: null));
     try {
-      final details = await _api.getCardDetails(event.accountId);
+      final details = await _api.getCardDetails('current');
       emit(state.copyWith(
         isLoading: false,
         isSensitiveVisible: true,

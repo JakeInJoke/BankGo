@@ -21,7 +21,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, User>> login({
-    required String email,
+    required String dni,
     required String password,
   }) async {
     if (!await networkInfo.isConnected) {
@@ -31,7 +31,7 @@ class AuthRepositoryImpl implements AuthRepository {
     }
     try {
       final user = await remoteDataSource.login(
-        email: email,
+        dni: dni,
         password: password,
       );
       await localDataSource.cacheUser(user);

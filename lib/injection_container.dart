@@ -1,6 +1,6 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
@@ -27,6 +27,9 @@ import 'package:bank_go/features/transactions/data/repositories/transactions_rep
 import 'package:bank_go/features/transactions/domain/repositories/transactions_repository.dart';
 import 'package:bank_go/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:bank_go/features/transactions/presentation/bloc/transactions_bloc.dart';
+import 'package:bank_go/features/accounts/data/datasources/accounts_remote_datasource.dart';
+import 'package:bank_go/features/accounts/data/repositories/accounts_repository_impl.dart';
+import 'package:bank_go/features/accounts/domain/repositories/accounts_repository.dart';
 
 import 'package:bank_go/features/accounts/presentation/bloc/card_bloc.dart';
 import 'package:bank_go/features/dashboard/presentation/bloc/simulation_bloc.dart';
@@ -138,7 +141,20 @@ Future<void> init() async {
 
   // ─── Features: Accounts ───────────────────────────────────────────────────────
   // BLoC
-  sl.registerFactory(() => CardBloc(sl(), sl()));
+  sl.registerFactory(() => CardBloc(sl()));
+
+  // Repository
+  sl.registerLazySingleton<AccountsRepository>(
+    () => AccountsRepositoryImpl(
+      remoteDataSource: sl(),
+      networkInfo: sl(),
+    ),
+  );
+
+  // Data sources
+  sl.registerLazySingleton<AccountsRemoteDataSource>(
+    () => AccountsRemoteDataSourceImpl(mockBankApi: sl()),
+  );
 
   // Use cases
   sl.registerLazySingleton(() => GetTransactionsUseCase(sl()));

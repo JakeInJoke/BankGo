@@ -15,7 +15,7 @@ Diseña el flujo de:
     7. Sistema de alertas in-app.
 
 ## Estados Críticos 
-Define visualmente cómo se verán los estados de 'Carga', 'Error', 'Lista vacía' y 'Botón de reintento'. Genera una descripción de los wireframes para que un desarrollador pueda implementarlos en [Flutter]
+Define visualmente cómo se verán los estados de 'Carga', 'Error', 'Lista vacía' y 'Botón de reintento'. Genera una descripción de los wireframes para que un desarrollador pueda implementarlos en Flutter
 
 ## Detalles
 - En los distintos estados deben de aparecer pantallas que hagan referencia al estado en el que pertenecen

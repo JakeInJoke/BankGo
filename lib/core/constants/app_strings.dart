@@ -11,6 +11,8 @@ class AppStrings {
   // ─── Auth ─────────────────────────────────────────────────────────────────────
   static const String welcomeBack = '¡Bienvenido de vuelta!';
   static const String loginSubtitle = 'Ingresa tus credenciales para continuar';
+  static const String dniLabel = 'DNI';
+  static const String dniHint = '12345678';
   static const String emailLabel = 'Correo electrónico';
   static const String emailHint = 'correo@ejemplo.com';
   static const String passwordLabel = 'Contraseña';
@@ -83,6 +85,7 @@ class AppStrings {
 
   // ─── Validation ───────────────────────────────────────────────────────────────
   static const String fieldRequired = 'Este campo es requerido';
+  static const String invalidDni = 'Ingresa un DNI válido (8 dígitos)';
   static const String invalidEmail = 'Ingresa un correo válido';
   static const String passwordTooShort =
       'La contraseña debe tener al menos 8 caracteres';

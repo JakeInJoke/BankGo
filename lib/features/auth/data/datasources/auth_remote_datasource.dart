@@ -4,7 +4,7 @@ import 'package:bank_go/core/utils/pkce_helper.dart';
 import 'package:bank_go/features/auth/data/models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<UserModel> login({required String email, required String password});
+  Future<UserModel> login({required String dni, required String password});
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -14,7 +14,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<UserModel> login({
-    required String email,
+    required String dni,
     required String password,
   }) async {
     try {
@@ -23,7 +23,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final codeChallenge = pkceCodePair['challenge']!;
 
       final response = await mockBankApi.login(
-        email: email,
+        dni: dni,
         password: password,
         codeChallenge: codeChallenge,
       );

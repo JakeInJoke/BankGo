@@ -3,6 +3,39 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
 import 'package:bank_go/core/mocks/mock_bank_api.dart';
 
+// ─── Domain types ────────────────────────────────────────────────────────────
+
+enum NotificationType { security, purchase, info }
+
+class NotificationItem extends Equatable {
+  final String title;
+  final String message;
+  final NotificationType type;
+  final DateTime createdAt;
+  final bool isRead;
+
+  const NotificationItem({
+    required this.title,
+    required this.message,
+    required this.type,
+    required this.createdAt,
+    this.isRead = false,
+  });
+
+  NotificationItem copyWithRead() => NotificationItem(
+        title: title,
+        message: message,
+        type: type,
+        createdAt: createdAt,
+        isRead: true,
+      );
+
+  @override
+  List<Object?> get props => [title, message, type, createdAt, isRead];
+}
+
+// ─── Events ──────────────────────────────────────────────────────────────────
+
 abstract class SimulationEvent extends Equatable {
   const SimulationEvent();
   @override
@@ -15,6 +48,8 @@ class StopSimulation extends SimulationEvent {}
 
 class ClearBlockedAttempt extends SimulationEvent {}
 
+class _SimulatePurchase extends SimulationEvent {}
+
 class MarkNotificationsAsRead extends SimulationEvent {}
 
 class AddUserActionNotification extends SimulationEvent {
@@ -25,59 +60,52 @@ class AddUserActionNotification extends SimulationEvent {
   const AddUserActionNotification({
     required this.title,
     required this.message,
-    this.type = NotificationType.info,
+    required this.type,
   });
 
   @override
   List<Object> get props => [title, message, type];
 }
 
-class _SimulatePurchase extends SimulationEvent {}
+// ─── State ───────────────────────────────────────────────────────────────────
 
 class SimulationState extends Equatable {
-  final bool hasBlockedAttempt;
-  final String? latestMessage;
-  final List<InAppNotificationItem> notifications;
-  final int unreadCount;
+  final bool isBlockedAttempt;
+  final String? message;
+  final List<NotificationItem> notifications;
 
   const SimulationState({
-    this.hasBlockedAttempt = false,
-    this.latestMessage,
+    this.isBlockedAttempt = false,
+    this.message,
     this.notifications = const [],
-    this.unreadCount = 0,
   });
 
+  int get unreadCount => notifications.where((n) => !n.isRead).length;
+
   SimulationState copyWith({
-    bool? hasBlockedAttempt,
-    String? latestMessage,
-    List<InAppNotificationItem>? notifications,
-    int? unreadCount,
-  }) {
-    return SimulationState(
-      hasBlockedAttempt: hasBlockedAttempt ?? this.hasBlockedAttempt,
-      latestMessage: latestMessage,
-      notifications: notifications ?? this.notifications,
-      unreadCount: unreadCount ?? this.unreadCount,
-    );
-  }
+    bool? isBlockedAttempt,
+    String? message,
+    List<NotificationItem>? notifications,
+  }) =>
+      SimulationState(
+        isBlockedAttempt: isBlockedAttempt ?? this.isBlockedAttempt,
+        message: message ?? this.message,
+        notifications: notifications ?? this.notifications,
+      );
 
   @override
-  List<Object?> get props => [
-        hasBlockedAttempt,
-        latestMessage,
-        notifications,
-        unreadCount,
-      ];
+  List<Object?> get props => [isBlockedAttempt, message, notifications];
 }
+
+// ─── BLoC ────────────────────────────────────────────────────────────────────
 
 class SimulationBloc extends Bloc<SimulationEvent, SimulationState> {
   Timer? _timer;
-  int _tick = 0;
 
   SimulationBloc() : super(const SimulationState()) {
     on<StartSimulation>((event, emit) {
       _timer?.cancel();
-      _timer = Timer.periodic(const Duration(seconds: 15), (timer) {
+      _timer = Timer.periodic(const Duration(seconds: 7), (timer) {
         add(_SimulatePurchase());
       });
     });
@@ -87,58 +115,44 @@ class SimulationBloc extends Bloc<SimulationEvent, SimulationState> {
     });
 
     on<ClearBlockedAttempt>((event, emit) {
-      emit(state.copyWith(hasBlockedAttempt: false, latestMessage: null));
+      emit(state.copyWith(isBlockedAttempt: false));
     });
 
     on<MarkNotificationsAsRead>((event, emit) {
-      emit(state.copyWith(unreadCount: 0));
-    });
-
-    on<AddUserActionNotification>((event, emit) {
-      final newNotification = InAppNotificationItem(
-        id: DateTime.now().microsecondsSinceEpoch.toString(),
-        title: event.title,
-        message: event.message,
-        createdAt: DateTime.now(),
-        type: event.type,
-      );
       emit(state.copyWith(
-        notifications: [newNotification, ...state.notifications],
-        unreadCount: state.unreadCount + 1,
+        notifications:
+            state.notifications.map((n) => n.copyWithRead()).toList(),
       ));
     });
 
+    on<AddUserActionNotification>((event, emit) {
+      final item = NotificationItem(
+        title: event.title,
+        message: event.message,
+        type: event.type,
+        createdAt: DateTime.now(),
+      );
+      emit(state.copyWith(notifications: [item, ...state.notifications]));
+    });
+
     on<_SimulatePurchase>((event, emit) {
-      final accountId =
-          MockBankApi.demoAccountIds[_tick % MockBankApi.demoAccountIds.length];
-      _tick += 1;
-
-      if (!MockBankApi.isCardEnabledForAccount(accountId)) {
-        final message =
-            'Intento de compra bloqueado en la tarjeta de la cuenta $accountId.';
-        final updatedNotifications = [
-          InAppNotificationItem(
-            id: DateTime.now().microsecondsSinceEpoch.toString(),
-            title: 'Compra bloqueada',
-            message: message,
-            createdAt: DateTime.now(),
-            type: NotificationType.security,
-          ),
-          ...state.notifications,
-        ];
-
+      if (!MockBankApi.isAnyCardEnabled) {
+        final notification = NotificationItem(
+          title: 'Intento de compra bloqueado',
+          message: 'Se realizó un intento de compra con una tarjeta apagada.',
+          type: NotificationType.purchase,
+          createdAt: DateTime.now(),
+        );
         emit(state.copyWith(
-          hasBlockedAttempt: true,
-          latestMessage: message,
-          notifications: updatedNotifications,
-          unreadCount: state.unreadCount + 1,
+          isBlockedAttempt: true,
+          message: 'Se realizó un intento de compra con una tarjeta apagada.',
+          notifications: [notification, ...state.notifications],
         ));
-
         Future.delayed(const Duration(seconds: 2), () {
           add(ClearBlockedAttempt());
         });
       } else {
-        emit(state.copyWith(hasBlockedAttempt: false, latestMessage: null));
+        emit(state.copyWith(isBlockedAttempt: false));
       }
     });
   }
@@ -148,25 +162,4 @@ class SimulationBloc extends Bloc<SimulationEvent, SimulationState> {
     _timer?.cancel();
     return super.close();
   }
-}
-
-enum NotificationType { security, purchase, info }
-
-class InAppNotificationItem extends Equatable {
-  final String id;
-  final String title;
-  final String message;
-  final DateTime createdAt;
-  final NotificationType type;
-
-  const InAppNotificationItem({
-    required this.id,
-    required this.title,
-    required this.message,
-    required this.createdAt,
-    required this.type,
-  });
-
-  @override
-  List<Object?> get props => [id, title, message, createdAt, type];
 }

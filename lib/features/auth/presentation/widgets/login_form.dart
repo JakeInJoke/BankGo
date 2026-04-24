@@ -70,7 +70,7 @@ class _LoginFormState extends State<LoginForm> {
 
     context.read<AuthBloc>().add(
           const AuthLoginRequested(
-            email: MockBankApi.demoEmail,
+            dni: MockBankApi.demoDni,
             password: MockBankApi.demoPassword,
           ),
         );
@@ -78,49 +78,42 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
-        final isLoading = state is AuthLoading;
-        
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: PinIndicator(
-                length: _pinLength,
-                filledCount: _pin.length,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.spaceXXL),
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                Opacity(
-                  opacity: isLoading ? 0.3 : 1.0,
-                  child: AbsorbPointer(
-                    absorbing: isLoading,
-                    child: SecureNumericKeypad(
-                      onDigitPressed: _onDigitPressed,
-                      onDeletePressed: _onDeletePressed,
-                      onClearPressed: _onClearPressed,
-                    ),
-                  ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Center(
+          child: PinIndicator(
+            length: _pinLength,
+            filledCount: _pin.length,
+          ),
+        ),
+        const SizedBox(height: AppDimensions.spaceXXL),
+        BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            if (state is AuthLoading) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(AppDimensions.spaceLG),
+                  child: CircularProgressIndicator(),
                 ),
-                if (isLoading)
-                  const CircularProgressIndicator(),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.spaceMD),
-            Align(
-              alignment: Alignment.center,
-              child: TextButton(
-                onPressed: isLoading ? null : () {},
-                child: const Text(AppStrings.forgotPassword),
-              ),
-            ),
-          ],
-        );
-      },
+              );
+            }
+            return SecureNumericKeypad(
+              onDigitPressed: _onDigitPressed,
+              onDeletePressed: _onDeletePressed,
+              onClearPressed: _onClearPressed,
+            );
+          },
+        ),
+        const SizedBox(height: AppDimensions.spaceMD),
+        Align(
+          alignment: Alignment.center,
+          child: TextButton(
+            onPressed: () {},
+            child: const Text(AppStrings.forgotPassword),
+          ),
+        ),
+      ],
     );
   }
 }
