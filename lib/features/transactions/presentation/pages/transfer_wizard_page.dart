@@ -184,6 +184,31 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
             'Ingresa el número de cuenta o tarjeta (16 dígitos) del destinatario.',
             style: TextStyle(color: AppColors.grey500),
           ),
+          const SizedBox(height: AppDimensions.spaceMD),
+          Container(
+            padding: const EdgeInsets.all(AppDimensions.spaceMD),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.15),
+              ),
+            ),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Cuenta mock verificada para pruebas',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
+                ),
+                SizedBox(height: AppDimensions.spaceXS),
+                Text('7711223344556677 · María García · Banco del Pacífico'),
+              ],
+            ),
+          ),
           const SizedBox(height: AppDimensions.spaceXXL),
           TextField(
             controller: _accountController,
@@ -265,6 +290,43 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
                 'Detalles del envío',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
+              if (state.isDestinationVerified) ...[
+                const SizedBox(height: AppDimensions.spaceMD),
+                Container(
+                  padding: const EdgeInsets.all(AppDimensions.spaceMD),
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withValues(alpha: 0.08),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.radiusMD),
+                    border: Border.all(
+                      color: AppColors.success.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.verified_rounded,
+                          color: AppColors.success),
+                      const SizedBox(width: AppDimensions.spaceSM),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              state.destinationAccountName ?? 'Destinatario verificado',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '${state.destinationBankName ?? 'Banco mock'} · ${state.destinationAccount ?? ''}',
+                              style: const TextStyle(color: AppColors.grey500),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: AppDimensions.spaceXXL),
               const Text(
                 'Cuenta de origen',
@@ -414,6 +476,17 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
                 'Verificación Final',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
+              if (state.isDestinationVerified) ...[
+                const SizedBox(height: AppDimensions.spaceMD),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.account_balance_outlined),
+                  title: Text(state.destinationAccountName ?? 'Destinatario'),
+                  subtitle: Text(
+                    '${state.destinationBankName ?? 'Banco mock'} · ${state.destinationAccount ?? ''}',
+                  ),
+                ),
+              ],
               const SizedBox(height: AppDimensions.spaceXL),
               Container(
                 padding: const EdgeInsets.all(20),

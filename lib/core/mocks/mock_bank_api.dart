@@ -6,6 +6,18 @@ import 'package:bank_go/features/transactions/domain/entities/transaction.dart';
 class MockBankApi {
   static const String demoEmail = 'demo@bankgo.com';
   static const String demoPassword = 'BankGo123!';
+  static const Map<String, Map<String, String>> _verifiedDestinationAccounts = {
+    '7711223344556677': {
+      'holder_name': 'María García',
+      'bank_name': 'Banco del Pacífico',
+      'alias': 'Renta departamento',
+    },
+    '8899001122334455': {
+      'holder_name': 'Juan Pérez',
+      'bank_name': 'Banco Andino',
+      'alias': 'Proveedor frecuente',
+    },
+  };
 
   // Internal state for demo purposes
   static final Map<String, bool> _isCardEnabledByAccount = {
@@ -231,8 +243,19 @@ class MockBankApi {
 
   Future<bool> validateAccount(String accountNumber) async {
     await Future.delayed(const Duration(milliseconds: 300));
-    // Simple validation: must be 16 digits and not starting with 0
-    return accountNumber.length == 16 && !accountNumber.startsWith('0');
+    return _verifiedDestinationAccounts.containsKey(accountNumber);
+  }
+
+  Future<Map<String, String>?> getVerifiedDestinationAccount(
+    String accountNumber,
+  ) async {
+    await Future.delayed(const Duration(milliseconds: 150));
+    final account = _verifiedDestinationAccounts[accountNumber];
+    if (account == null) {
+      return null;
+    }
+    return Map<String, String>.from(account)
+      ..['account_number'] = accountNumber;
   }
 
   Future<Map<String, dynamic>> processServicePayment({
@@ -338,6 +361,13 @@ class MockBankApi {
   }) async {
     await Future.delayed(const Duration(milliseconds: 600));
 
+    final verifiedDestination = _verifiedDestinationAccounts[beneficiary];
+    if (verifiedDestination == null) {
+      throw const ServerException(
+        message: 'La cuenta de destino no está verificada.',
+      );
+    }
+
     if (token != currentToken) {
       throw const ServerException(
           message: 'Token de seguridad inválido o expirado.');
@@ -371,8 +401,8 @@ class MockBankApi {
 
     final newTransaction = {
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
-      'title': 'Transferencia a $beneficiary',
-      'subtitle': 'A: $beneficiary',
+      'title': 'Transferencia a ${verifiedDestination['holder_name']}',
+      'subtitle': 'A: ${verifiedDestination['holder_name']}',
       'description': 'Transferencia interbancaria SPEI',
       'amount': -amount,
       'type': 'transfer',

@@ -36,6 +36,9 @@ enum TransferStatus { initial, validatingAccount, accountValid, error, processin
 class TransferState extends Equatable {
   final TransferStatus status;
   final String? destinationAccount;
+  final String? destinationAccountName;
+  final String? destinationBankName;
+  final bool isDestinationVerified;
   final Account? sourceAccount;
   final double amount;
   final String? securityToken;
@@ -44,6 +47,9 @@ class TransferState extends Equatable {
   const TransferState({
     this.status = TransferStatus.initial,
     this.destinationAccount,
+    this.destinationAccountName,
+    this.destinationBankName,
+    this.isDestinationVerified = false,
     this.sourceAccount,
     this.amount = 0,
     this.securityToken,
@@ -53,6 +59,9 @@ class TransferState extends Equatable {
   TransferState copyWith({
     TransferStatus? status,
     String? destinationAccount,
+    String? destinationAccountName,
+    String? destinationBankName,
+    bool? isDestinationVerified,
     Account? sourceAccount,
     double? amount,
     String? securityToken,
@@ -61,6 +70,11 @@ class TransferState extends Equatable {
     return TransferState(
       status: status ?? this.status,
       destinationAccount: destinationAccount ?? this.destinationAccount,
+        destinationAccountName:
+          destinationAccountName ?? this.destinationAccountName,
+        destinationBankName: destinationBankName ?? this.destinationBankName,
+        isDestinationVerified:
+          isDestinationVerified ?? this.isDestinationVerified,
       sourceAccount: sourceAccount ?? this.sourceAccount,
       amount: amount ?? this.amount,
       securityToken: securityToken ?? this.securityToken,
@@ -69,5 +83,15 @@ class TransferState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [status, destinationAccount, sourceAccount, amount, securityToken, error];
+  List<Object?> get props => [
+        status,
+        destinationAccount,
+        destinationAccountName,
+        destinationBankName,
+        isDestinationVerified,
+        sourceAccount,
+        amount,
+        securityToken,
+        error,
+      ];
 }

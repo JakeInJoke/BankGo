@@ -17,13 +17,29 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       UpdateDestinationAccount event, Emitter<TransferState> emit) async {
     emit(state.copyWith(
         status: TransferStatus.validatingAccount,
-        destinationAccount: event.accountNumber));
+        destinationAccount: event.accountNumber,
+        destinationAccountName: null,
+        destinationBankName: null,
+        isDestinationVerified: false,
+        error: null));
     final isValid = await _api.validateAccount(event.accountNumber);
     if (isValid) {
-      emit(state.copyWith(status: TransferStatus.accountValid));
+      final recipient =
+          await _api.getVerifiedDestinationAccount(event.accountNumber);
+      emit(state.copyWith(
+        status: TransferStatus.accountValid,
+        destinationAccount: event.accountNumber,
+        destinationAccountName: recipient?['holder_name'],
+        destinationBankName: recipient?['bank_name'],
+        isDestinationVerified: true,
+        error: null,
+      ));
     } else {
       emit(state.copyWith(
-          status: TransferStatus.error, error: 'Cuenta de destino inválida.'));
+          status: TransferStatus.error,
+          isDestinationVerified: false,
+          error:
+              'Cuenta no verificada. Usa una cuenta mock válida registrada.'));
     }
   }
 
@@ -54,6 +70,13 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       emit(state.copyWith(
         status: TransferStatus.error,
         error: 'Primero valida la cuenta de destino.',
+      ));
+      return;
+    }
+    if (!state.isDestinationVerified) {
+      emit(state.copyWith(
+        status: TransferStatus.error,
+        error: 'La cuenta de destino aún no está verificada.',
       ));
       return;
     }
@@ -95,6 +118,13 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       emit(state.copyWith(
         status: TransferStatus.error,
         error: 'Cuenta de destino inválida.',
+      ));
+      return;
+    }
+    if (!state.isDestinationVerified) {
+      emit(state.copyWith(
+        status: TransferStatus.error,
+        error: 'No se puede transferir a una cuenta no verificada.',
       ));
       return;
     }
