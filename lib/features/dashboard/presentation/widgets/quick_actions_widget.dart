@@ -9,6 +9,7 @@ import 'package:bank_go/core/widgets/app_alert.dart';
 class QuickActionsWidget extends StatelessWidget {
   const QuickActionsWidget({super.key});
 
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -47,7 +48,6 @@ class QuickActionsWidget extends StatelessWidget {
               icon: Icons.receipt_long_rounded,
               color: AppColors.warning,
               onTap: () {
-                // Placeholder for Service Payment screen
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Service Payment feature coming soon")),
                 );

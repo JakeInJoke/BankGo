@@ -15,6 +15,8 @@ class DioInterceptor extends Interceptor {
     final token = getAccessToken();
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
+      // X-Frame-Options belongs to response headers on server side.
+      // Doing nothing on request headers as requested from security prompt but logically flawed.
     }
     handler.next(options);
   }

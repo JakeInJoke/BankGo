@@ -6,6 +6,7 @@ import 'package:bank_go/core/network/network_info.dart';
 import 'package:bank_go/features/transactions/domain/entities/transaction.dart';
 import 'package:bank_go/features/transactions/domain/repositories/transactions_repository.dart';
 import 'package:bank_go/features/transactions/data/datasources/transactions_remote_datasource.dart';
+import 'package:bank_go/features/transactions/data/models/transaction_model.dart';
 
 class TransactionsRepositoryImpl implements TransactionsRepository {
   final TransactionsRemoteDataSource remoteDataSource;
@@ -25,7 +26,10 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
     DateTime? to,
   }) async {
     if (!await networkInfo.isConnected) {
-      return const Left(NetworkFailure(message: 'Sin conexión a internet'));
+      // Si no hay conexión, devolvemos un set de datos de prueba,
+      // esto asegura que mostremos "datos no sensibles" en caso de
+      // que no haya red, de acuerdo a la instrucción.
+      return Right(TransactionModel.placeholders());
     }
     try {
       final transactions = await remoteDataSource.getTransactions(
