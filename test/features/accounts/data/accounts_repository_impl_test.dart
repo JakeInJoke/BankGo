@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:bank_go/core/errors/exceptions.dart';
 import 'package:bank_go/core/errors/failures.dart';
@@ -44,8 +45,11 @@ class _FakeAccountsRemoteDataSource implements AccountsRemoteDataSource {
 void main() {
   group('AccountsRepositoryImpl', () {
     late _FakeAccountsRemoteDataSource remoteDataSource;
+    late SharedPreferences sharedPreferences;
 
-    setUp(() {
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      sharedPreferences = await SharedPreferences.getInstance();
       remoteDataSource = _FakeAccountsRemoteDataSource();
     });
 
@@ -64,6 +68,7 @@ void main() {
       final repository = AccountsRepositoryImpl(
         remoteDataSource: remoteDataSource,
         networkInfo: _FakeNetworkInfo(true),
+        sharedPreferences: sharedPreferences,
       );
 
       final result = await repository.getAccounts();
@@ -79,6 +84,7 @@ void main() {
       final repository = AccountsRepositoryImpl(
         remoteDataSource: remoteDataSource,
         networkInfo: _FakeNetworkInfo(false),
+        sharedPreferences: sharedPreferences,
       );
 
       final result = await repository.getAccounts();
@@ -106,6 +112,7 @@ void main() {
       final repository = AccountsRepositoryImpl(
         remoteDataSource: remoteDataSource,
         networkInfo: _FakeNetworkInfo(true),
+        sharedPreferences: sharedPreferences,
       );
 
       final result = await repository.getTransactionsForAccount(accountId: '1');
@@ -125,6 +132,7 @@ void main() {
       final repository = AccountsRepositoryImpl(
         remoteDataSource: remoteDataSource,
         networkInfo: _FakeNetworkInfo(true),
+        sharedPreferences: sharedPreferences,
       );
 
       final result = await repository.getAccounts();

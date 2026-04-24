@@ -1,7 +1,11 @@
 class DemoAuthCredentials {
-  static const String dni = '12345678';
-  static const String password = 'BankGo123!';
-  static const String pin = '123456';
+  // Demo credentials should be injected at build time (dart-define).
+  static const String dni = String.fromEnvironment('DEMO_DNI');
+  static const String password = String.fromEnvironment('DEMO_PASSWORD');
+  static const String pin = String.fromEnvironment('DEMO_PIN');
+
+  static bool get hasConfiguredCredentials =>
+      dni.trim().isNotEmpty && password.isNotEmpty;
 
   const DemoAuthCredentials._();
 }

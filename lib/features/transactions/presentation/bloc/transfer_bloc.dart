@@ -18,9 +18,15 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
     emit(state.copyWith(
         status: TransferStatus.validatingAccount,
         destinationAccount: event.accountNumber));
-    final isValid = await _api.validateAccount(event.accountNumber);
-    if (isValid) {
-      emit(state.copyWith(status: TransferStatus.accountValid));
+    final accountInfo =
+        await _api.getVerifiedDestinationAccount(event.accountNumber);
+    if (accountInfo != null) {
+      emit(state.copyWith(
+        status: TransferStatus.accountValid,
+        destinationAccountName: accountInfo['holder_name'],
+        destinationBankName: accountInfo['bank_name'],
+        isDestinationVerified: true,
+      ));
     } else {
       emit(state.copyWith(
           status: TransferStatus.error, error: 'Cuenta de destino inválida.'));
@@ -69,7 +75,7 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
     try {
       final token = await _api.requestSecurityToken();
       emit(state.copyWith(
-          status: TransferStatus.tokenRequested, securityToken: token));
+          status: TransferStatus.tokenRequested, securityToken: () => token));
     } catch (e) {
       emit(state.copyWith(status: TransferStatus.error, error: e.toString()));
     }
@@ -100,7 +106,8 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
         amount: state.amount,
         token: event.token.trim(),
       );
-      emit(state.copyWith(status: TransferStatus.success));
+      emit(state.copyWith(
+          status: TransferStatus.success, securityToken: () => null));
     } catch (e) {
       emit(state.copyWith(status: TransferStatus.error, error: e.toString()));
     }

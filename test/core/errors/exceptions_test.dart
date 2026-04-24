@@ -18,14 +18,15 @@ void main() {
       expect(exception.message, 'Tiempo de espera agotado');
     });
 
-    test('ServerException conserva código de error personalizado', () {
+    test('ServerException conserva mensaje pero no muestra status en toString', () {
       const exception = ServerException(
         message: 'Operación inválida',
         statusCode: 422,
       );
 
       expect(exception.statusCode, 422);
-      expect(exception.toString(), contains('status: 422'));
+      expect(exception.toString(), 'Operación inválida');
+      expect(exception.toString(), isNot(contains('status')));
     });
   });
 }

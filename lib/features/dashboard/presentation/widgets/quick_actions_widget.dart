@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
 import 'package:bank_go/core/constants/app_strings.dart';
-import 'package:bank_go/core/routes/app_router.dart';
 
 class QuickActionsWidget extends StatelessWidget {
   const QuickActionsWidget({super.key});
@@ -21,7 +20,7 @@ class QuickActionsWidget extends StatelessWidget {
         ),
         const SizedBox(height: AppDimensions.spaceMD),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             _QuickActionButton(
               label: AppStrings.sendMoney,
@@ -29,17 +28,12 @@ class QuickActionsWidget extends StatelessWidget {
               color: AppColors.primary,
               onTap: () => Navigator.pushNamed(context, '/transfer-wizard'),
             ),
+            const SizedBox(width: AppDimensions.spaceXL),
             _QuickActionButton(
               label: "Servicios",
               icon: Icons.receipt_long_rounded,
               color: AppColors.warning,
               onTap: () => Navigator.pushNamed(context, '/service-payment'),
-            ),
-            _QuickActionButton(
-              label: "Historial",
-              icon: Icons.history_rounded,
-              color: AppColors.accent,
-              onTap: () => Navigator.pushNamed(context, AppRouter.transactions),
             ),
           ],
         ),

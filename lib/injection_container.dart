@@ -60,9 +60,9 @@ Future<void> init() async {
     );
 
     // Add Security Interceptor
-    dio.interceptors.add(DioInterceptor(getAccessToken: () {
+    dio.interceptors.add(DioInterceptor(getAccessToken: () async {
       try {
-        return sl<AuthLocalDataSource>().getUserSync()?.token;
+        return await sl<AuthLocalDataSource>().getAccessToken();
       } catch (_) {
         return null;
       }
@@ -117,7 +117,7 @@ Future<void> init() async {
       getRecentTransactionsUseCase: sl(),
     ),
   );
-  sl.registerFactory(() => SimulationBloc());
+  sl.registerFactory(() => SimulationBloc(sl()));
   // Use cases
   sl.registerLazySingleton(() => GetAccountSummaryUseCase(sl()));
   sl.registerLazySingleton(() => GetRecentTransactionsUseCase(sl()));
@@ -126,6 +126,7 @@ Future<void> init() async {
     () => DashboardRepositoryImpl(
       remoteDataSource: sl(),
       networkInfo: sl(),
+      sharedPreferences: sl(),
     ),
   );
   // Data sources
@@ -148,6 +149,7 @@ Future<void> init() async {
     () => AccountsRepositoryImpl(
       remoteDataSource: sl(),
       networkInfo: sl(),
+      sharedPreferences: sl(),
     ),
   );
 
@@ -163,6 +165,7 @@ Future<void> init() async {
     () => TransactionsRepositoryImpl(
       remoteDataSource: sl(),
       networkInfo: sl(),
+      sharedPreferences: sl(),
     ),
   );
   // Data sources

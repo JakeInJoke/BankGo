@@ -44,6 +44,19 @@ class UserModel extends User {
     };
   }
 
+  /// Non-sensitive payload for local offline cache.
+  Map<String, dynamic> toCacheJson() {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'phone': phone,
+      'avatar_url': avatarUrl,
+      'token_type': tokenType,
+      'expires_in': expiresIn,
+    };
+  }
+
   factory UserModel.fromEntity(User user) {
     return UserModel(
       id: user.id,

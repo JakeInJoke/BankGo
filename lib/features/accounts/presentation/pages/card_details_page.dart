@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
 import 'package:bank_go/core/utils/currency_formatter.dart';
+import 'package:bank_go/features/dashboard/presentation/bloc/simulation_bloc.dart';
 import 'package:bank_go/features/accounts/presentation/bloc/card_bloc.dart';
 import 'package:bank_go/features/accounts/presentation/bloc/card_event.dart';
 import 'package:bank_go/features/accounts/presentation/bloc/card_state.dart';
 import 'package:bank_go/features/accounts/domain/entities/account.dart';
+import 'package:bank_go/features/accounts/presentation/widgets/card_action_modal.dart';
 
 class CardDetailsPage extends StatelessWidget {
   final Account account;
@@ -209,6 +212,14 @@ class CardDetailsPage extends StatelessWidget {
 
   void _showFreezeTokenRequest(BuildContext context, bool freeze) {
     context.read<CardBloc>().add(RequestFreezeToken(account.id));
+    context.read<SimulationBloc>().add(
+          AddUserActionNotification(
+            title: 'Código de seguridad enviado',
+            message:
+                'Se envió un código para ${freeze ? 'congelar' : 'activar'} tu tarjeta.',
+            type: NotificationType.security,
+          ),
+        );
 
     showModalBottomSheet(
       context: context,
@@ -216,62 +227,16 @@ class CardDetailsPage extends StatelessWidget {
       builder: (modalContext) {
         return BlocProvider.value(
           value: context.read<CardBloc>(),
-          child: BlocConsumer<CardBloc, CardState>(
-            listener: (context, state) {
-              if (state.securityToken == null &&
-                  !state.isLoading &&
-                  state.error == null) {
-                Navigator.pop(modalContext);
-              }
-            },
-            builder: (context, state) {
-              final tokenController = TextEditingController();
-              return Padding(
-                padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom,
-                    left: 24,
-                    right: 24,
-                    top: 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(freeze ? 'Congelar Tarjeta' : 'Activar Tarjeta',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 16),
-                    Text(
-                        'Ingresa el token para ${freeze ? 'congelar' : 'activar'} tu tarjeta.'),
-                    const SizedBox(height: 8),
-                    Text(
-                        'Token recibido: ${state.securityToken ?? "Generando..."}',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary)),
-                    const SizedBox(height: 24),
-                    TextField(
-                      controller: tokenController,
-                      decoration: const InputDecoration(
-                        labelText: 'Token de seguridad',
-                        border: OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.number,
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: state.isLoading || state.securityToken == null
-                          ? null
-                          : () {
-                              context.read<CardBloc>().add(ToggleCardFreeze(
-                                  account.id, freeze, tokenController.text));
-                            },
-                      child: state.isLoading
-                          ? const CircularProgressIndicator()
-                          : const Text('Confirmar'),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              );
+          child: CardActionModal(
+            accountId: account.id,
+            isFreezeAction: true,
+            title: freeze ? 'Congelar Tarjeta' : 'Activar Tarjeta',
+            description:
+                'Ingresa el token para ${freeze ? 'congelar' : 'activar'} tu tarjeta.',
+            onConfirm: (token) {
+              context
+                  .read<CardBloc>()
+                  .add(ToggleCardFreeze(account.id, freeze, token));
             },
           ),
         );
@@ -350,6 +315,14 @@ class CardDetailsPage extends StatelessWidget {
 
   void _showTokenRequest(BuildContext context) {
     context.read<CardBloc>().add(RequestFreezeToken(account.id));
+    context.read<SimulationBloc>().add(
+          const AddUserActionNotification(
+            title: 'Código de seguridad enviado',
+            message:
+                'Se envió un código para visualizar los datos sensibles de la tarjeta.',
+            type: NotificationType.security,
+          ),
+        );
 
     showModalBottomSheet(
       context: context,
@@ -357,67 +330,16 @@ class CardDetailsPage extends StatelessWidget {
       builder: (modalContext) {
         return BlocProvider.value(
           value: context.read<CardBloc>(),
-          child: BlocConsumer<CardBloc, CardState>(
-            listener: (context, state) {
-              if (state.isSensitiveVisible) {
-                Navigator.pop(modalContext);
-              }
-            },
-            builder: (context, state) {
-              final tokenController = TextEditingController();
-              return Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                  left: 24,
-                  right: 24,
-                  top: 24,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Verificación de Seguridad',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                        'Ingresa el token de seguridad para ver los datos de la tarjeta.'),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Token recibido: ${state.securityToken ?? "Generando..."}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    TextField(
-                      controller: tokenController,
-                      decoration: const InputDecoration(
-                        labelText: 'Token de seguridad',
-                        border: OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.number,
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: state.isLoading || state.securityToken == null
-                          ? null
-                          : () {
-                              context.read<CardBloc>().add(
-                                    ShowSensitiveInfo(
-                                        account.id, tokenController.text),
-                                  );
-                            },
-                      child: state.isLoading
-                          ? const CircularProgressIndicator()
-                          : const Text('Validar y Mostrar'),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              );
+          child: CardActionModal(
+            accountId: account.id,
+            isFreezeAction: false,
+            title: 'Verificación de Seguridad',
+            description:
+                'Ingresa el token de seguridad para ver los datos de la tarjeta.',
+            onConfirm: (token) {
+              context
+                  .read<CardBloc>()
+                  .add(ShowSensitiveInfo(account.id, token));
             },
           ),
         );

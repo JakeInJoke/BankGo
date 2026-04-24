@@ -13,18 +13,21 @@ void main() {
     });
 
     test('retorna usuario demo con credenciales válidas', () async {
+      final dni = MockBankApi.demoDni.isEmpty ? '12345678' : MockBankApi.demoDni;
+      final password = MockBankApi.demoPassword.isEmpty ? 'password' : MockBankApi.demoPassword;
+      
       final result = await mockApi.login(
-        dni: MockBankApi.demoDni,
-        password: MockBankApi.demoPassword,
+        dni: dni,
+        password: password,
       );
 
       expect(result['email'], isNotNull);
       expect(result['token'], isNotNull);
     });
 
-    test('lanza UnauthorizedException con credenciales inválidas', () async {
+    test('lanza UnauthorizedException con credenciales vacías', () async {
       expect(
-        () => mockApi.login(dni: '00000000', password: 'incorrecta'),
+        () => mockApi.login(dni: '', password: ''),
         throwsA(isA<UnauthorizedException>()),
       );
     });
@@ -51,10 +54,10 @@ void main() {
       expect(result['amount'], -100.0);
     });
 
-    test('rechaza compra cuando la tarjeta está apagada', () async {
-      final token = await mockApi.requestSecurityToken(accountId: '1');
+    test('rechaza pago de servicio cuando la tarjeta de crédito está apagada', () async {
+      final token = await mockApi.requestSecurityToken(accountId: '3');
       await mockApi.toggleCardFreeze(
-        accountId: '1',
+        accountId: '3',
         freeze: true,
         token: token,
       );
@@ -63,16 +66,34 @@ void main() {
         () => mockApi.processServicePayment(
           serviceName: 'Internet',
           amount: 100,
-          sourceAccountId: '1',
+          sourceAccountId: '3',
         ),
         throwsA(
           isA<ServerException>().having(
             (error) => error.message,
             'message',
-            contains('tarjeta apagada'),
+            contains('tarjeta de crédito apagada'),
           ),
         ),
       );
+    });
+
+    test('permite pago de servicio con tarjeta de ahorros apagada', () async {
+      final token = await mockApi.requestSecurityToken(accountId: '1');
+      await mockApi.toggleCardFreeze(
+        accountId: '1',
+        freeze: true,
+        token: token,
+      );
+
+      final result = await mockApi.processServicePayment(
+        serviceName: 'Internet',
+        amount: 100,
+        sourceAccountId: '1',
+      );
+
+      expect(result['type'], 'service');
+      expect(result['status'], 'completed');
     });
 
     test('procesa pago con saldo suficiente', () async {

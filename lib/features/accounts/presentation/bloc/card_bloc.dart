@@ -37,8 +37,8 @@ class CardBloc extends Bloc<CardEvent, CardState> {
       RequestFreezeToken event, Emitter<CardState> emit) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final token = await _api.requestSecurityToken();
-      emit(state.copyWith(isLoading: false, securityToken: token));
+      final token = await _api.requestSecurityToken(accountId: event.accountId);
+      emit(state.copyWith(isLoading: false, securityToken: () => token));
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
@@ -51,7 +51,9 @@ class CardBloc extends Bloc<CardEvent, CardState> {
       await _api.toggleCardFreeze(
           accountId: event.accountId, freeze: event.freeze, token: event.token);
       emit(state.copyWith(
-          isLoading: false, isFrozen: event.freeze, securityToken: null));
+          isLoading: false,
+          isFrozen: event.freeze,
+          securityToken: () => null));
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
@@ -77,7 +79,7 @@ class CardBloc extends Bloc<CardEvent, CardState> {
         isSensitiveVisible: true,
         cvv: details['cvv'] as String?,
         remainingSeconds: 180,
-        securityToken: null,
+        securityToken: () => null,
       ));
       _cvvTimer?.cancel();
       _cvvTimer = Timer.periodic(const Duration(seconds: 1), (timer) {

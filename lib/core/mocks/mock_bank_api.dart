@@ -192,12 +192,22 @@ class MockBankApi {
     AppLogger.info('API_LOGIN', 'login() → dni=[redacted]');
     await Future.delayed(const Duration(milliseconds: 500));
 
-    if (dni.trim() != demoDni || password != demoPassword) {
-      AppLogger.warn('API_LOGIN_FAIL',
-          'Credenciales inválidas para el usuario proporcionado');
-      throw const UnauthorizedException(
-        message: 'Credenciales demo inválidas',
-      );
+    if (DemoAuthCredentials.hasConfiguredCredentials) {
+      if (dni.trim() != demoDni || password != demoPassword) {
+        AppLogger.warn('API_LOGIN_FAIL',
+            'Credenciales inválidas para el usuario proporcionado');
+        throw const UnauthorizedException(
+          message: 'Credenciales demo inválidas',
+        );
+      }
+    } else {
+      // If no demo credentials are configured through dart-define,
+      // allow non-empty credentials to keep local demo operable.
+      if (dni.trim().isEmpty || password.isEmpty) {
+        throw const UnauthorizedException(
+          message: 'Debes ingresar credenciales para continuar',
+        );
+      }
     }
 
     // Validate PKCE code_challenge (simulated validation)
@@ -315,20 +325,22 @@ class MockBankApi {
               'No se pudo procesar tu pago en este momento. Intenta de nuevo.');
     }
 
-    if (!isCardEnabledForAccount(sourceAccountId)) {
-      AppLogger.warn('API_CARD_FROZEN',
-          'Operación bloqueada: tarjeta apagada (accountId=$sourceAccountId)');
-      throw const ServerException(
-          message:
-              'No se pueden realizar operaciones con la tarjeta apagada. Por favor enciéndala.');
-    }
-
     final sourceAccount = _accountById(sourceAccountId);
     if (sourceAccount == null) {
       throw const ServerException(message: 'Cuenta de origen no encontrada.');
     }
 
     final type = sourceAccount['type'] as String;
+
+    // Solo se bloquea si es tarjeta de crédito y está apagada
+    if (type == 'credit' && !isCardEnabledForAccount(sourceAccountId)) {
+      AppLogger.warn('API_CARD_FROZEN',
+          'Operación bloqueada: tarjeta de crédito apagada (accountId=$sourceAccountId)');
+      throw const ServerException(
+          message:
+              'No se pueden realizar operaciones con la tarjeta de crédito apagada. Por favor enciéndala.');
+    }
+
     if (type == 'credit') {
       final creditLimit =
           (sourceAccount['credit_limit'] as num?)?.toDouble() ?? 0;
@@ -364,6 +376,59 @@ class MockBankApi {
       'source_account_id': sourceAccountId,
     };
 
+    _allTransactions.insert(0, newTransaction);
+    return newTransaction;
+  }
+
+  Future<Map<String, dynamic>> simulateCardPurchase({
+    required String accountId,
+    required double amount,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 120));
+
+    if (!isCardEnabledForAccount(accountId)) {
+      throw const ServerException(
+          message: 'Tarjeta desactivada. Operación bloqueada.');
+    }
+
+    final sourceAccount = _accountById(accountId);
+    if (sourceAccount == null) {
+      throw const ServerException(message: 'Cuenta no encontrada.');
+    }
+
+    final type = sourceAccount['type'] as String;
+    if (type == 'credit') {
+      final creditLimit =
+          (sourceAccount['credit_limit'] as num?)?.toDouble() ?? 0;
+      final currentConsumption =
+          (sourceAccount['consumption'] as num?)?.toDouble() ?? 0;
+      if ((creditLimit - currentConsumption) < amount) {
+        throw const ServerException(message: 'Línea de crédito insuficiente.');
+      }
+      sourceAccount['consumption'] = currentConsumption + amount;
+      sourceAccount['balance'] = -(currentConsumption + amount);
+    } else {
+      final currentBalance = (sourceAccount['balance'] as num).toDouble();
+      if (currentBalance < amount) {
+        throw const ServerException(message: 'Saldo insuficiente.');
+      }
+      sourceAccount['balance'] = currentBalance - amount;
+    }
+
+    final newTransaction = {
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'title': 'Compra con tarjeta',
+      'subtitle': sourceAccount['alias'],
+      'description': 'Compra simulada automática',
+      'amount': -amount,
+      'type': 'expense',
+      'status': 'completed',
+      'date': DateTime.now().toIso8601String(),
+      'category': 'Compras',
+      'reference': 'SIM-${DateTime.now().millisecondsSinceEpoch}',
+      'icon_name': 'cart',
+      'source_account_id': accountId,
+    };
     _allTransactions.insert(0, newTransaction);
     return newTransaction;
   }

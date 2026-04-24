@@ -55,7 +55,7 @@ class _AccountPageContentState extends State<AccountPageContent> {
     return ListView(
       padding: const EdgeInsets.all(AppDimensions.paddingPage),
       children: [
-        AccountCard(account: widget.account, isRevealed: false),
+        AccountCard(account: widget.account, isRevealed: true),
         const SizedBox(height: AppDimensions.spaceLG),
         Text(
           'Movimientos recientes',

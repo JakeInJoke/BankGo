@@ -1,37 +1,101 @@
+import 'package:bank_go/core/utils/currency_formatter.dart';
+import 'package:bank_go/features/auth/presentation/widgets/pin_indicator.dart';
 import 'package:flutter/material.dart';
 
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
 import 'package:bank_go/core/constants/app_strings.dart';
-import 'package:bank_go/core/utils/currency_formatter.dart';
-import 'package:bank_go/features/accounts/data/models/account_model.dart';
 import 'package:bank_go/features/accounts/domain/entities/account.dart';
-import 'package:bank_go/features/auth/presentation/widgets/pin_indicator.dart';
+import 'package:bank_go/features/accounts/domain/repositories/accounts_repository.dart';
+import 'package:bank_go/features/accounts/presentation/widgets/account_page_content.dart';
+import 'package:bank_go/injection_container.dart';
 
-class AccountsPage extends StatelessWidget {
+class AccountsPage extends StatefulWidget {
   const AccountsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Using placeholder data until API is connected.
-    final accounts = AccountModel.placeholders();
+  State<AccountsPage> createState() => _AccountsPageState();
+}
 
+class _AccountsPageState extends State<AccountsPage> {
+  final PageController _pageController = PageController();
+  List<Account> _accounts = [];
+  bool _isLoading = true;
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAccounts();
+  }
+
+  Future<void> _loadAccounts() async {
+    final result = await sl<AccountsRepository>().getAccounts();
+    if (!mounted) return;
+    result.fold(
+      (_) => setState(() => _isLoading = false),
+      (accounts) => setState(() {
+        _accounts = accounts;
+        _isLoading = false;
+      }),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.myAccounts),
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingPage,
-          vertical: AppDimensions.spaceLG,
-        ),
-        itemCount: accounts.length,
-        separatorBuilder: (_, __) =>
-            const SizedBox(height: AppDimensions.spaceLG),
-        itemBuilder: (context, index) {
-          return _AccountCard(account: accounts[index]);
-        },
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _accounts.isEmpty
+              ? const Center(child: Text('No hay cuentas disponibles.'))
+              : Column(
+                  children: [
+                    const SizedBox(height: AppDimensions.spaceMD),
+                    _buildPageIndicator(),
+                    const SizedBox(height: AppDimensions.spaceSM),
+                    Expanded(
+                      child: PageView.builder(
+                        controller: _pageController,
+                        itemCount: _accounts.length,
+                        onPageChanged: (index) =>
+                            setState(() => _currentPage = index),
+                        itemBuilder: (context, index) {
+                          return AccountPageContent(
+                            account: _accounts[index],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+    );
+  }
+
+  Widget _buildPageIndicator() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(_accounts.length, (index) {
+        final isActive = index == _currentPage;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: isActive ? 24 : 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: isActive ? AppColors.primary : AppColors.grey300,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        );
+      }),
     );
   }
 }
