@@ -7,6 +7,7 @@ import 'package:bank_go/features/auth/data/models/user_model.dart';
 
 abstract class AuthLocalDataSource {
   Future<UserModel> getCachedUser();
+  UserModel? getUserSync();
   Future<void> cacheUser(UserModel user);
   Future<void> clearCache();
 }
@@ -20,9 +21,18 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
 
   @override
   Future<UserModel> getCachedUser() async {
+    final user = getUserSync();
+    if (user == null) {
+      throw const CacheException(message: 'No hay usuario en caché');
+    }
+    return user;
+  }
+
+  @override
+  UserModel? getUserSync() {
     final jsonString = sharedPreferences.getString(_kCachedUser);
     if (jsonString == null) {
-      throw const CacheException(message: 'No hay usuario en caché');
+      return null;
     }
     return UserModel.fromJson(
       jsonDecode(jsonString) as Map<String, dynamic>,

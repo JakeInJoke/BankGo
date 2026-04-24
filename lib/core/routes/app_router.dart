@@ -5,6 +5,7 @@ import 'package:bank_go/features/auth/presentation/pages/splash_page.dart';
 import 'package:bank_go/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:bank_go/features/accounts/presentation/pages/accounts_page.dart';
 import 'package:bank_go/features/transactions/presentation/pages/transactions_page.dart';
+import 'package:bank_go/features/transactions/presentation/pages/payment_page.dart';
 import 'package:bank_go/features/profile/presentation/pages/profile_page.dart';
 
 class AppRouter {
@@ -15,6 +16,7 @@ class AppRouter {
   static const String dashboard = '/dashboard';
   static const String accounts = '/accounts';
   static const String transactions = '/transactions';
+  static const String payment = '/payment';
   static const String profile = '/profile';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -29,6 +31,8 @@ class AppRouter {
         return _slideRoute(const AccountsPage(), settings);
       case transactions:
         return _slideRoute(const TransactionsPage(), settings);
+      case payment:
+        return _slideRoute(const PaymentPage(), settings);
       case profile:
         return _slideRoute(const ProfilePage(), settings);
       default:
