@@ -93,6 +93,7 @@ class _BankGoAppState extends State<BankGoApp> {
         child: Listener(
           onPointerDown: (_) => _resetInactivityTimer(),
           child: Stack(
+            alignment: Alignment.topLeft,
             children: [
               MaterialApp(
                 navigatorKey: BankGoApp.navigatorKey,

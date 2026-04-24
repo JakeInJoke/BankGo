@@ -5,10 +5,6 @@ import 'package:crypto/crypto.dart';
 /// PKCE (Proof Key for Code Exchange) helper for OAuth2 flows.
 /// Generates and validates code verifier and challenge pairs.
 class PkceHelper {
-  // Characters allowed in code_verifier (unreserved + underscore + hyphen)
-  static const String _allowedChars =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-
   /// Generates a random code_verifier (43-128 characters, URL-safe).
   /// RFC 7636 recommends 43 characters for security.
   static String generateCodeVerifier({int length = 43}) {

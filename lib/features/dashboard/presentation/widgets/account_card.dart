@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
-import 'package:bank_go/core/constants/app_strings.dart';
 import 'package:bank_go/core/utils/currency_formatter.dart';
 import 'package:bank_go/features/dashboard/domain/entities/account_summary.dart';
 import 'package:bank_go/features/dashboard/presentation/bloc/simulation_bloc.dart';
@@ -92,7 +91,8 @@ class _AccountCardState extends State<AccountCard> {
                   onChanged: (value) {
                     _showFreezeTokenRequest(context, !value);
                   },
-                  activeColor: AppColors.primary,
+                  activeThumbColor: AppColors.primary,
+                  activeTrackColor: AppColors.primary.withValues(alpha: 0.2),
                   inactiveThumbColor: AppColors.error,
                   inactiveTrackColor: AppColors.error.withValues(alpha: 0.2),
                 ),

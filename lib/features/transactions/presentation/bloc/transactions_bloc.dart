@@ -6,6 +6,7 @@ import 'package:bank_go/features/transactions/presentation/bloc/transactions_sta
 
 class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   final GetTransactionsUseCase getTransactionsUseCase;
+  static const int _pageSize = 5;
 
   TransactionsBloc({required this.getTransactionsUseCase})
       : super(const TransactionsInitial()) {
@@ -21,7 +22,7 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     emit(const TransactionsLoading());
     final result = await getTransactionsUseCase(
       page: 1,
-      limit: 20,
+      limit: _pageSize,
       type: event.type,
     );
     result.fold(
@@ -31,7 +32,7 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
           transactions: transactions,
           activeFilter: event.type,
           currentPage: 1,
-          hasMorePages: transactions.length >= 20,
+          hasMorePages: transactions.length >= _pageSize,
         ),
       ),
     );
@@ -61,7 +62,7 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
       final nextPage = currentState.currentPage + 1;
       final result = await getTransactionsUseCase(
         page: nextPage,
-        limit: 20,
+        limit: _pageSize,
         type: event.type ?? currentState.activeFilter,
       );
 
@@ -71,7 +72,7 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
           currentState.copyWith(
             transactions: [...currentState.transactions, ...newTransactions],
             currentPage: nextPage,
-            hasMorePages: newTransactions.length >= 20,
+            hasMorePages: newTransactions.length >= _pageSize,
             isLoadingMore: false,
           ),
         ),

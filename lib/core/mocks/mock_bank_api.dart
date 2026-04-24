@@ -58,7 +58,7 @@ class MockBankApi {
       'consumption': 3200.50,
     },
   ];
-  static List<Map<String, dynamic>> _allTransactions = [
+  static final List<Map<String, dynamic>> _allTransactions = [
     {
       'id': '1',
       'title': 'Salario mensual',
@@ -135,7 +135,6 @@ class MockBankApi {
       'subtitle': 'Servicio eléctrico',
       'description': 'Pago de servicio eléctrico',
       'amount': -450.00,
-      'type': 'expense',
       'status': 'completed',
       'date': '2026-04-18T11:20:00.000',
       'category': 'Servicios',

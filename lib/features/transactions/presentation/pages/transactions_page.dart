@@ -107,8 +107,9 @@ class _TransactionsView extends StatelessWidget {
             ),
             itemCount: state.transactions.length + (state.hasMorePages ? 1 : 0),
             separatorBuilder: (_, index) {
-              if (index == state.transactions.length)
+              if (index == state.transactions.length) {
                 return const SizedBox.shrink();
+              }
               return const Divider(height: 1);
             },
             itemBuilder: (_, index) {

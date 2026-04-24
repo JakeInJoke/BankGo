@@ -272,7 +272,7 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
               ),
               const SizedBox(height: AppDimensions.spaceSM),
               DropdownButtonFormField<String>(
-                value: _selectedSourceAccountId,
+                initialValue: _selectedSourceAccountId,
                 isExpanded: true,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(

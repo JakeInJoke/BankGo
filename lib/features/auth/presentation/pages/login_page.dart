@@ -34,21 +34,21 @@ class LoginPage extends StatelessWidget {
           );
         }
       },
-      child: Scaffold(
+      child: const Scaffold(
         backgroundColor: AppColors.backgroundLight,
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppDimensions.paddingPage),
+            padding: EdgeInsets.all(AppDimensions.paddingPage),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: AppDimensions.spaceXXL),
+                SizedBox(height: AppDimensions.spaceXXL),
                 AuthHeader(
                   title: AppStrings.welcomeBack,
                   subtitle: AppStrings.loginSubtitle,
                 ),
-                const SizedBox(height: AppDimensions.spaceXXL),
-                const EmailPasswordLoginForm(),
+                SizedBox(height: AppDimensions.spaceXXL),
+                EmailPasswordLoginForm(),
               ],
             ),
           ),

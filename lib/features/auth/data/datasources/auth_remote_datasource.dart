@@ -22,11 +22,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final pkceCodePair = PkceHelper.generatePkceCodePair();
       final codeChallenge = pkceCodePair['challenge']!;
 
-      // In a real OAuth2 flow, the code_verifier would be stored securely
-      // and sent later during token exchange. For this mock, we store it
-      // as a demonstration of PKCE flow.
-      _storedCodeVerifier = pkceCodePair['verifier'];
-
       final response = await mockBankApi.login(
         email: email,
         password: password,
@@ -39,7 +34,4 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw const ServerException(message: 'Error al iniciar sesión');
     }
   }
-
-  // Simulated storage for PKCE code_verifier (in production, use flutter_secure_storage)
-  static String? _storedCodeVerifier;
 }

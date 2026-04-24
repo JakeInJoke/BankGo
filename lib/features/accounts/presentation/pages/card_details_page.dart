@@ -43,6 +43,8 @@ class CardDetailsPage extends StatelessWidget {
               children: [
                 _buildCardVisual(context, state),
                 const SizedBox(height: AppDimensions.spaceXL),
+                _buildAccountBalanceSection(context),
+                const SizedBox(height: AppDimensions.spaceLG),
                 _buildStatusSection(context, state),
                 const SizedBox(height: AppDimensions.spaceLG),
                 if (account.type == AccountType.credit)
@@ -198,6 +200,33 @@ class CardDetailsPage extends StatelessWidget {
     );
   }
 
+  Widget _buildAccountBalanceSection(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.spaceMD),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
+        border: Border.all(color: AppColors.grey200),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'Saldo de la cuenta',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Text(
+            CurrencyFormatter.format(account.balance),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: AppColors.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showFreezeTokenRequest(BuildContext context, bool freeze) {
     context.read<CardBloc>().add(RequestFreezeToken(account.id));
     context.read<SimulationBloc>().add(AddUserActionNotification(
@@ -281,6 +310,15 @@ class CardDetailsPage extends StatelessWidget {
                       onPressed: state.isLoading || state.securityToken == null
                           ? null
                           : () {
+                              if (tokenController.text != state.securityToken) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Token incorrecto.'),
+                                  ),
+                                );
+                                return;
+                              }
+                              Navigator.of(modalContext).pop();
                               context.read<CardBloc>().add(ToggleCardFreeze(
                                   account.id, freeze, tokenController.text));
                             },
@@ -452,6 +490,15 @@ class CardDetailsPage extends StatelessWidget {
                       onPressed: state.isLoading || state.securityToken == null
                           ? null
                           : () {
+                              if (tokenController.text != state.securityToken) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Token incorrecto.'),
+                                  ),
+                                );
+                                return;
+                              }
+                              Navigator.of(modalContext).pop();
                               context.read<CardBloc>().add(
                                     ShowSensitiveInfo(
                                         account.id, tokenController.text),

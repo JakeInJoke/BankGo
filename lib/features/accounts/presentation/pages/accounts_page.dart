@@ -89,7 +89,7 @@ class _AccountCardState extends State<_AccountCard> {
   Widget build(BuildContext context) {
     final (gradient, icon) = _styleForType(widget.account.type);
     final isPrimary = widget.account.isDefault;
-    final showInfo = isPrimary || _isRevealed;
+    final showCardNumber = isPrimary || _isRevealed;
 
     return InkWell(
       onTap: widget.account.isLinkedToCard
@@ -117,25 +117,33 @@ class _AccountCardState extends State<_AccountCard> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.account.alias,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: AppColors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    Text(
-                      _labelForType(widget.account.type),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.white.withValues(alpha: 0.7),
-                          ),
-                    ),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.account.alias,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: AppColors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      Text(
+                        _labelForType(widget.account.type),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.white.withValues(alpha: 0.7),
+                            ),
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: AppDimensions.spaceSM),
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     if (!isPrimary)
                       IconButton(
@@ -166,7 +174,7 @@ class _AccountCardState extends State<_AccountCard> {
               ],
             ),
             const SizedBox(height: AppDimensions.spaceXL),
-            if (widget.account.type == AccountType.credit && showInfo)
+            if (widget.account.type == AccountType.credit)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -189,9 +197,7 @@ class _AccountCardState extends State<_AccountCard> {
               )
             else
               Text(
-                showInfo
-                    ? CurrencyFormatter.format(widget.account.balance)
-                    : '****',
+                CurrencyFormatter.format(widget.account.balance),
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       color: AppColors.white,
                       fontWeight: FontWeight.w700,
@@ -201,15 +207,21 @@ class _AccountCardState extends State<_AccountCard> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  showInfo
-                      ? widget.account.maskedNumber
-                      : '**** **** **** ****',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.white.withValues(alpha: 0.8),
-                        letterSpacing: 2,
-                      ),
+                Expanded(
+                  child: Text(
+                    showCardNumber
+                        ? widget.account.maskedNumber
+                        : '**** **** **** ****',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.white.withValues(alpha: 0.8),
+                          letterSpacing: 2,
+                        ),
+                  ),
                 ),
+                if (isPrimary)
+                  const SizedBox(width: AppDimensions.spaceSM),
                 if (isPrimary)
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -242,6 +254,8 @@ class _AccountCardState extends State<_AccountCard> {
     final tokenController = TextEditingController();
     String? receivedToken;
     bool isRequesting = true;
+    String? requestError;
+    void Function(void Function())? modalSetState;
 
     // Fire notification
     outerContext.read<SimulationBloc>().add(AddUserActionNotification(
@@ -251,14 +265,39 @@ class _AccountCardState extends State<_AccountCard> {
           type: NotificationType.security,
         ));
 
-    // Request token asynchronously
-    sl<MockBankApi>()
-        .requestSecurityToken(accountId: widget.account.id)
-        .then((token) {
-      if (!mounted) return;
-      receivedToken = token;
-      tokenController.text = token;
-    });
+    Future<void> requestToken() async {
+      try {
+        final token =
+            await sl<MockBankApi>().requestSecurityToken(accountId: widget.account.id);
+        if (!mounted) return;
+        if (modalSetState != null) {
+          modalSetState!(() {
+            receivedToken = token;
+            tokenController.text = token;
+            isRequesting = false;
+            requestError = null;
+          });
+        } else {
+          receivedToken = token;
+          tokenController.text = token;
+          isRequesting = false;
+          requestError = null;
+        }
+      } catch (_) {
+        if (!mounted) return;
+        if (modalSetState != null) {
+          modalSetState!(() {
+            isRequesting = false;
+            requestError = 'No se pudo generar el token.';
+          });
+        } else {
+          isRequesting = false;
+          requestError = 'No se pudo generar el token.';
+        }
+      }
+    }
+
+    requestToken();
 
     showModalBottomSheet(
       context: outerContext,
@@ -266,11 +305,7 @@ class _AccountCardState extends State<_AccountCard> {
       builder: (modalContext) {
         return StatefulBuilder(
           builder: (context, setModalState) {
-            // Trigger refresh when token arrives
-            if (receivedToken != null && isRequesting) {
-              isRequesting = false;
-              Future.microtask(() => setModalState(() {}));
-            }
+            modalSetState = setModalState;
 
             return Padding(
               padding: EdgeInsets.only(
@@ -292,7 +327,10 @@ class _AccountCardState extends State<_AccountCard> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  if (receivedToken != null)
+                  if (isRequesting)
+                    const Text('Generando token...',
+                        style: TextStyle(color: AppColors.grey500))
+                  else if (receivedToken != null)
                     const Text(
                       'Token auto-completado',
                       style: TextStyle(
@@ -300,8 +338,22 @@ class _AccountCardState extends State<_AccountCard> {
                           color: AppColors.primary),
                     )
                   else
-                    const Text('Generando token...',
-                        style: TextStyle(color: AppColors.grey500)),
+                    Text(
+                      requestError ?? 'No se pudo generar el token.',
+                      style: const TextStyle(color: AppColors.error),
+                    ),
+                  if (!isRequesting && receivedToken == null)
+                    TextButton.icon(
+                      onPressed: () {
+                        setModalState(() {
+                          isRequesting = true;
+                          requestError = null;
+                        });
+                        requestToken();
+                      },
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: const Text('Reintentar token'),
+                    ),
                   const SizedBox(height: 24),
                   TextField(
                     controller: tokenController,
@@ -324,8 +376,9 @@ class _AccountCardState extends State<_AccountCard> {
                               Navigator.pop(modalContext);
                               setState(() => _isRevealed = true);
                               Future.delayed(_revealDuration, () {
-                                if (mounted)
+                                if (mounted) {
                                   setState(() => _isRevealed = false);
+                                }
                               });
                             } else {
                               ScaffoldMessenger.of(outerContext).showSnackBar(
