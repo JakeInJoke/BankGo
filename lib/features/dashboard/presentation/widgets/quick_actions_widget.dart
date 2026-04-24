@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
 import 'package:bank_go/core/constants/app_strings.dart';
-import 'package:bank_go/core/routes/app_router.dart';
 import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_event.dart';
 
@@ -53,12 +52,6 @@ class QuickActionsWidget extends StatelessWidget {
                       .add(const DashboardRefreshRequested());
                 }
               },
-            ),
-            _QuickActionButton(
-              label: "Historial",
-              icon: Icons.history_rounded,
-              color: AppColors.accent,
-              onTap: () => Navigator.pushNamed(context, AppRouter.transactions),
             ),
           ],
         ),

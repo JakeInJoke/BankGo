@@ -70,6 +70,18 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
     setState(() => _currentStep++);
   }
 
+  void _resetWizard(BuildContext context) {
+    _accountController.clear();
+    _amountController.clear();
+    _tokenController.clear();
+    context.read<TransferBloc>().add(const ResetTransfer());
+    setState(() {
+      _currentStep = 0;
+      _selectedSourceAccountId = null;
+    });
+    _pageController.jumpToPage(0);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -112,10 +124,9 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
                         '${DateTime.now().toString().substring(0, 16)} — Transferencia de S/ ${state.amount.toStringAsFixed(2)} a cuenta ${state.destinationAccount ?? ''} completada.',
                     type: NotificationType.purchase,
                   ));
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Transferencia exitosa')),
-              );
-              Navigator.pop(context, true);
+              if (_currentStep == 3) {
+                _nextPage();
+              }
             } else if (state.status == TransferStatus.error) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(state.error ?? 'Error')),
@@ -135,6 +146,7 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
                       _buildStep2(context, state),
                       _buildStep3(context, state),
                       _buildStep4(context, state),
+                      _buildStep5(context, state),
                     ],
                   ),
                 ),
@@ -153,7 +165,7 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
         vertical: AppDimensions.spaceMD,
       ),
       child: Row(
-        children: List.generate(4, (index) {
+        children: List.generate(5, (index) {
           return Expanded(
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
@@ -676,6 +688,100 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
       ),
     );
   }
+
+  Widget _buildStep5(BuildContext context, TransferState state) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingPage,
+        vertical: AppDimensions.spaceLG,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.all(AppDimensions.spaceXL),
+            decoration: BoxDecoration(
+              color: AppColors.success.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
+              border: Border.all(
+                color: AppColors.success.withValues(alpha: 0.18),
+              ),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  width: 84,
+                  height: 84,
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withValues(alpha: 0.16),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    color: AppColors.success,
+                    size: 52,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spaceLG),
+                const Text(
+                  'Transferencia realizada',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: AppDimensions.spaceSM),
+                const Text(
+                  'La operación se completó correctamente y ya fue registrada en tus movimientos.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.grey500),
+                ),
+                const SizedBox(height: AppDimensions.spaceXL),
+                _SuccessDetailRow(
+                  label: 'Monto transferido',
+                  value: CurrencyFormatter.format(state.amount),
+                  highlight: true,
+                ),
+                _SuccessDetailRow(
+                  label: 'Destinatario',
+                  value: state.destinationAccountName ?? 'Cuenta verificada',
+                ),
+                _SuccessDetailRow(
+                  label: 'Cuenta destino',
+                  value: state.destinationAccount ?? '-',
+                ),
+                _SuccessDetailRow(
+                  label: 'Cuenta origen',
+                  value: state.sourceAccount?.alias ?? '-',
+                ),
+              ],
+            ),
+          ),
+          const Spacer(),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: const Text(
+              'Finalizar',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spaceSM),
+          OutlinedButton(
+            onPressed: () => _resetWizard(context),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            child: const Text('Nueva transferencia'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _SummaryRow extends StatelessWidget {
@@ -711,6 +817,47 @@ class _SummaryRow extends StatelessWidget {
               style: TextStyle(
                 fontWeight: isAmount ? FontWeight.bold : FontWeight.w600,
                 color: isAmount ? AppColors.primary : null,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SuccessDetailRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool highlight;
+
+  const _SuccessDetailRow({
+    required this.label,
+    required this.value,
+    this.highlight = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spaceXS),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.grey500),
+            ),
+          ),
+          const SizedBox(width: AppDimensions.spaceSM),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                fontWeight: highlight ? FontWeight.bold : FontWeight.w600,
+                color: highlight ? AppColors.success : null,
               ),
             ),
           ),

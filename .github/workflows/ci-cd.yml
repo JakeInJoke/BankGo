@@ -51,34 +51,11 @@ jobs:
           set -euo pipefail
           mkdir -p android/app
           if [[ ! -f android/app/obfuscation_dictionary.txt ]]; then
-            cat > android/app/obfuscation_dictionary.txt <<'EOF'
-            alpha
-            bravo
-            charlie
-            delta
-            echo
-            foxtrot
-            golf
-            hotel
-            india
-            juliet
-            kilo
-            lima
-            mike
-            november
-            oscar
-            papa
-            quebec
-            romeo
-            sierra
-            tango
-            uniform
-            victor
-            whiskey
-            xray
-            yankee
-            zulu
-            EOF
+            printf '%s\n' \
+              alpha bravo charlie delta echo foxtrot golf hotel india juliet \
+              kilo lima mike november oscar papa quebec romeo sierra tango \
+              uniform victor whiskey xray yankee zulu \
+              > android/app/obfuscation_dictionary.txt
           fi
           test -f android/app/obfuscation_dictionary.txt
 
@@ -184,34 +161,11 @@ jobs:
           set -euo pipefail
           mkdir -p android/app
           if [[ ! -f android/app/obfuscation_dictionary.txt ]]; then
-            cat > android/app/obfuscation_dictionary.txt <<'EOF'
-            alpha
-            bravo
-            charlie
-            delta
-            echo
-            foxtrot
-            golf
-            hotel
-            india
-            juliet
-            kilo
-            lima
-            mike
-            november
-            oscar
-            papa
-            quebec
-            romeo
-            sierra
-            tango
-            uniform
-            victor
-            whiskey
-            xray
-            yankee
-            zulu
-            EOF
+            printf '%s\n' \
+              alpha bravo charlie delta echo foxtrot golf hotel india juliet \
+              kilo lima mike november oscar papa quebec romeo sierra tango \
+              uniform victor whiskey xray yankee zulu \
+              > android/app/obfuscation_dictionary.txt
           fi
           test -f android/app/obfuscation_dictionary.txt
 
@@ -222,12 +176,12 @@ jobs:
 
       - name: Create key.properties
         run: |
-          cat > android/key.properties <<'EOF'
-          storeFile=keystore/upload-keystore.jks
-          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
-          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
-          EOF
+          printf '%s\n' \
+            'storeFile=keystore/upload-keystore.jks' \
+            'storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}' \
+            'keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}' \
+            'keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}' \
+            > android/key.properties
 
       - name: Verify signing files
         run: |

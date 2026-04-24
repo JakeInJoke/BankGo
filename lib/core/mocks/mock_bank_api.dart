@@ -415,7 +415,8 @@ class MockBankApi {
       AppLogger.warn(
           'API_TRANSFER_FAIL', 'Cuenta destino no verificada: $beneficiary');
       throw const ServerException(
-        message: 'La cuenta de destino no está verificada.',
+        message:
+            'Cuenta no verificada o inexistente. Valida la informacion y vuelve a intentarlo',
       );
     }
 
