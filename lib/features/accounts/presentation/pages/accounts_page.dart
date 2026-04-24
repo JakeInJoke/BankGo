@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
@@ -11,7 +9,6 @@ import 'package:bank_go/core/utils/currency_formatter.dart';
 import 'package:bank_go/core/utils/date_formatter.dart';
 import 'package:bank_go/features/accounts/data/models/account_model.dart';
 import 'package:bank_go/features/accounts/domain/entities/account.dart';
-import 'package:bank_go/features/dashboard/presentation/bloc/simulation_bloc.dart';
 import 'package:bank_go/features/transactions/data/models/transaction_model.dart';
 import 'package:bank_go/injection_container.dart';
 
@@ -371,8 +368,6 @@ class _AccountPageContent extends StatefulWidget {
 class _AccountPageContentState extends State<_AccountPageContent> {
   List<TransactionModel> _transactions = [];
   bool _isLoadingTx = true;
-
-  static const Duration _revealDuration = Duration(minutes: 1);
 
   @override
   void initState() {
