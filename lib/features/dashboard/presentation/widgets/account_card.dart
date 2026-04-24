@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
@@ -127,8 +126,9 @@ class _AccountCardState extends State<AccountCard> {
             description:
                 'Ingresa el token para ${freeze ? 'congelar' : 'activar'} tu tarjeta.',
             onConfirm: (token) {
-              context.read<CardBloc>().add(ToggleCardFreeze(
-                  widget.accountId, freeze, token));
+              context
+                  .read<CardBloc>()
+                  .add(ToggleCardFreeze(widget.accountId, freeze, token));
             },
           ),
         );
