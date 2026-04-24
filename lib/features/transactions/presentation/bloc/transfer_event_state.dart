@@ -72,7 +72,7 @@ class TransferState extends Equatable {
     bool? isDestinationVerified,
     Account? sourceAccount,
     double? amount,
-    String? securityToken,
+    String? Function()? securityToken,
     String? error,
   }) {
     return TransferState(
@@ -85,7 +85,7 @@ class TransferState extends Equatable {
           isDestinationVerified ?? this.isDestinationVerified,
       sourceAccount: sourceAccount ?? this.sourceAccount,
       amount: amount ?? this.amount,
-      securityToken: securityToken ?? this.securityToken,
+      securityToken: securityToken != null ? securityToken() : this.securityToken,
       error: error,
     );
   }

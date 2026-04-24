@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
@@ -7,6 +8,8 @@ import 'package:bank_go/features/auth/presentation/widgets/pin_setup_form.dart';
 
 class PinSetupPage extends StatelessWidget {
   const PinSetupPage({super.key});
+
+  static const String _kPinConfigured = 'PIN_CONFIGURED';
 
   @override
   Widget build(BuildContext context) {
@@ -41,9 +44,10 @@ class PinSetupPage extends StatelessWidget {
               ),
               const SizedBox(height: AppDimensions.spaceXL),
               PinSetupForm(
-                onPinSet: (pin) {
-                  // Here you would save the PIN locally
-                  // For now, let's just go to dashboard
+                onPinSet: (pin) async {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool(_kPinConfigured, pin.isNotEmpty);
+                  if (!context.mounted) return;
                   Navigator.pushReplacementNamed(context, AppRouter.dashboard);
                 },
               ),

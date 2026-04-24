@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:bank_go/core/errors/exceptions.dart';
 
 class DioInterceptor extends Interceptor {
-  final String? Function() getAccessToken;
+  final Future<String?> Function() getAccessToken;
 
   const DioInterceptor({required this.getAccessToken});
 
@@ -11,8 +11,8 @@ class DioInterceptor extends Interceptor {
   void onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
-  ) {
-    final token = getAccessToken();
+  ) async {
+    final token = await getAccessToken();
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
       // X-Frame-Options belongs to response headers on server side.

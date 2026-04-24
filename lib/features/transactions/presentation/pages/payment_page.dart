@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
@@ -10,8 +11,9 @@ class PaymentPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text(AppStrings.payBills),
       ),
@@ -61,6 +63,7 @@ class PaymentPage extends StatelessWidget {
                 prefixIcon: Icon(Icons.numbers),
               ),
               keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             ),
             const SizedBox(height: AppDimensions.spaceMD),
             TextFormField(
@@ -70,6 +73,9 @@ class PaymentPage extends StatelessWidget {
               ),
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
+              ],
             ),
             const SizedBox(height: AppDimensions.spaceXL),
             SizedBox(
@@ -107,11 +113,13 @@ class _ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-        border: Border.all(color: AppColors.grey200),
+        border:
+            Border.all(color: isDark ? AppColors.grey700 : AppColors.grey200),
       ),
       child: ListTile(
         leading: Container(
@@ -123,7 +131,10 @@ class _ServiceCard extends StatelessWidget {
           child: Icon(icon, color: color),
         ),
         title: Text(name, style: Theme.of(context).textTheme.titleMedium),
-        trailing: const Icon(Icons.chevron_right),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: isDark ? AppColors.grey300 : AppColors.grey600,
+        ),
         onTap: () {
           Navigator.pushNamed(
             context,

@@ -10,6 +10,8 @@ abstract class AuthLocalDataSource {
   Future<UserModel> getCachedUser();
   UserModel? getUserSync();
   Future<void> cacheUser(UserModel user);
+  Future<String?> getAccessToken();
+  Future<String?> getIdToken();
   Future<void> clearCache();
 }
 
@@ -48,10 +50,10 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
 
   @override
   Future<void> cacheUser(UserModel user) async {
-    // Save user data in SharedPreferences
+    // Save non-sensitive user data in SharedPreferences
     await sharedPreferences.setString(
       _kCachedUser,
-      jsonEncode(user.toJson()),
+      jsonEncode(user.toCacheJson()),
     );
 
     // Save sensitive tokens in secure storage
@@ -67,6 +69,16 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
         value: user.idToken,
       );
     }
+  }
+
+  @override
+  Future<String?> getAccessToken() {
+    return secureStorage.read(key: _kAccessToken);
+  }
+
+  @override
+  Future<String?> getIdToken() {
+    return secureStorage.read(key: _kIdToken);
   }
 
   @override

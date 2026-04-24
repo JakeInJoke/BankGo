@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
 import 'package:bank_go/core/utils/currency_formatter.dart';
 import 'package:bank_go/features/accounts/data/models/account_model.dart';
+import 'package:bank_go/features/accounts/domain/entities/account.dart';
+import 'package:bank_go/features/dashboard/presentation/bloc/simulation_bloc.dart';
 import 'package:bank_go/core/mocks/mock_bank_api.dart';
 import 'package:bank_go/injection_container.dart';
 
@@ -78,8 +82,15 @@ class _ServicePaymentPageState extends State<ServicePaymentPage> {
         sourceAccountId: _selectedAccountId!,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Pago realizado con éxito')));
+        context.read<SimulationBloc>().add(
+              AddUserActionNotification(
+                title: 'Pago realizado',
+                message:
+                    'Pago de ${CurrencyFormatter.format(amount)} a $_selectedService procesado.',
+                type: NotificationType.info,
+                amount: amount,
+              ),
+            );
         Navigator.pop(context);
       }
     } catch (e) {
@@ -130,8 +141,9 @@ class _ServicePaymentPageState extends State<ServicePaymentPage> {
                     items: _accounts
                         .map((a) => DropdownMenuItem(
                             value: a.id,
-                            child: Text(
-                                '${a.alias} (${CurrencyFormatter.format(a.balance)})')))
+                            child: Text(a.type == AccountType.credit
+                                ? '${a.alias} (Disponible: ${CurrencyFormatter.format(a.remainingCredit)})'
+                                : '${a.alias} (${CurrencyFormatter.format(a.balance)})')))
                         .toList(),
                     onChanged: (val) =>
                         setState(() => _selectedAccountId = val),
@@ -145,6 +157,9 @@ class _ServicePaymentPageState extends State<ServicePaymentPage> {
                   TextField(
                     controller: _amountController,
                     keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
+                    ],
                     decoration: const InputDecoration(
                         prefixText: '\$', border: OutlineInputBorder()),
                   ),

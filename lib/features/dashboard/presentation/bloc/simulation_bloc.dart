@@ -11,6 +11,7 @@ class NotificationItem extends Equatable {
   final String title;
   final String message;
   final NotificationType type;
+  final double? amount;
   final DateTime createdAt;
   final bool isRead;
 
@@ -18,6 +19,7 @@ class NotificationItem extends Equatable {
     required this.title,
     required this.message,
     required this.type,
+    this.amount,
     required this.createdAt,
     this.isRead = false,
   });
@@ -26,12 +28,13 @@ class NotificationItem extends Equatable {
         title: title,
         message: message,
         type: type,
+        amount: amount,
         createdAt: createdAt,
         isRead: true,
       );
 
   @override
-  List<Object?> get props => [title, message, type, createdAt, isRead];
+  List<Object?> get props => [title, message, type, amount, createdAt, isRead];
 }
 
 // ─── Events ──────────────────────────────────────────────────────────────────
@@ -39,7 +42,7 @@ class NotificationItem extends Equatable {
 abstract class SimulationEvent extends Equatable {
   const SimulationEvent();
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class StartSimulation extends SimulationEvent {}
@@ -56,15 +59,17 @@ class AddUserActionNotification extends SimulationEvent {
   final String title;
   final String message;
   final NotificationType type;
+  final double? amount;
 
   const AddUserActionNotification({
     required this.title,
     required this.message,
     required this.type,
+    this.amount,
   });
 
   @override
-  List<Object> get props => [title, message, type];
+  List<Object?> get props => [title, message, type, amount];
 }
 
 // ─── State ───────────────────────────────────────────────────────────────────
@@ -100,12 +105,21 @@ class SimulationState extends Equatable {
 // ─── BLoC ────────────────────────────────────────────────────────────────────
 
 class SimulationBloc extends Bloc<SimulationEvent, SimulationState> {
+  final MockBankApi _api;
   Timer? _timer;
+  int _currentCardIndex = 0;
 
-  SimulationBloc() : super(const SimulationState()) {
+  static const List<String> _cardAccountIds = ['1', '2', '3'];
+  static const Map<String, String> _cardAliases = {
+    '1': 'Cuenta Principal',
+    '2': 'Cuenta Corriente',
+    '3': 'Tarjeta de Crédito',
+  };
+
+  SimulationBloc(this._api) : super(const SimulationState()) {
     on<StartSimulation>((event, emit) {
       _timer?.cancel();
-      _timer = Timer.periodic(const Duration(seconds: 7), (timer) {
+      _timer = Timer.periodic(const Duration(seconds: 8), (timer) {
         add(_SimulatePurchase());
       });
     });
@@ -130,29 +144,70 @@ class SimulationBloc extends Bloc<SimulationEvent, SimulationState> {
         title: event.title,
         message: event.message,
         type: event.type,
+        amount: event.amount,
         createdAt: DateTime.now(),
       );
       emit(state.copyWith(notifications: [item, ...state.notifications]));
     });
 
-    on<_SimulatePurchase>((event, emit) {
-      if (!MockBankApi.isAnyCardEnabled) {
+    on<_SimulatePurchase>((event, emit) async {
+      final accountId =
+          _cardAccountIds[_currentCardIndex % _cardAccountIds.length];
+      _currentCardIndex = (_currentCardIndex + 1) % _cardAccountIds.length;
+      final alias = _cardAliases[accountId] ?? 'Tarjeta';
+
+      if (!MockBankApi.isCardEnabledForAccount(accountId)) {
         final notification = NotificationItem(
-          title: 'Intento de compra bloqueado',
-          message: 'Se realizó un intento de compra con una tarjeta apagada.',
+          title: 'Compra bloqueada',
+          message:
+              'Intento de compra en $alias fue bloqueado. La tarjeta está desactivada.',
           type: NotificationType.purchase,
           createdAt: DateTime.now(),
         );
         emit(state.copyWith(
           isBlockedAttempt: true,
-          message: 'Se realizó un intento de compra con una tarjeta apagada.',
+          message: 'Compra bloqueada en $alias (tarjeta desactivada).',
           notifications: [notification, ...state.notifications],
         ));
         Future.delayed(const Duration(seconds: 2), () {
-          add(ClearBlockedAttempt());
+          if (!isClosed) add(ClearBlockedAttempt());
         });
       } else {
-        emit(state.copyWith(isBlockedAttempt: false));
+        try {
+          final amount = 5 + (DateTime.now().millisecond % 6); // 5..10
+          await _api.simulateCardPurchase(
+            accountId: accountId,
+            amount: amount.toDouble(),
+          );
+
+          final notification = NotificationItem(
+            title: 'Compra realizada',
+            message: 'Compra exitosa en $alias por S/ $amount.00.',
+            type: NotificationType.purchase,
+            amount: amount.toDouble(),
+            createdAt: DateTime.now(),
+          );
+          emit(state.copyWith(
+            isBlockedAttempt: false,
+            notifications: [notification, ...state.notifications],
+          ));
+        } catch (_) {
+          final notification = NotificationItem(
+            title: 'Compra rechazada',
+            message:
+                'No se pudo procesar compra en $alias por saldo/línea insuficiente.',
+            type: NotificationType.purchase,
+            createdAt: DateTime.now(),
+          );
+          emit(state.copyWith(
+            isBlockedAttempt: true,
+            message: 'Compra rechazada en $alias por saldo insuficiente.',
+            notifications: [notification, ...state.notifications],
+          ));
+          Future.delayed(const Duration(seconds: 2), () {
+            if (!isClosed) add(ClearBlockedAttempt());
+          });
+        }
       }
     });
   }

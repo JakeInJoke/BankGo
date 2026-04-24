@@ -31,7 +31,7 @@ class CardState extends Equatable {
     String? cvv,
     String? expirationDate,
     int? remainingSeconds,
-    String? securityToken,
+    String? Function()? securityToken,
     String? error,
   }) {
     return CardState(
@@ -42,7 +42,7 @@ class CardState extends Equatable {
       cvv: cvv ?? this.cvv,
       expirationDate: expirationDate ?? this.expirationDate,
       remainingSeconds: remainingSeconds ?? this.remainingSeconds,
-      securityToken: securityToken ?? this.securityToken,
+      securityToken: securityToken != null ? securityToken() : this.securityToken,
       error: error,
     );
   }

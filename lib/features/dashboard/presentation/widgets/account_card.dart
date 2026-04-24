@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
@@ -11,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bank_go/features/accounts/presentation/bloc/card_bloc.dart';
 import 'package:bank_go/features/accounts/presentation/bloc/card_event.dart';
 import 'package:bank_go/features/accounts/presentation/bloc/card_state.dart';
+import 'package:bank_go/features/accounts/presentation/widgets/card_action_modal.dart';
 
 class AccountCard extends StatefulWidget {
   final AccountSummary summary;
@@ -112,7 +112,6 @@ class _AccountCardState extends State<AccountCard> {
               '${DateTime.now().toString().substring(0, 16)} — Se solicitó token para ${freeze ? 'congelar' : 'activar'} tarjeta principal.',
           type: NotificationType.security,
         ));
-    final tokenController = TextEditingController();
 
     showModalBottomSheet(
       context: context,
@@ -120,103 +119,16 @@ class _AccountCardState extends State<AccountCard> {
       builder: (modalContext) {
         return BlocProvider.value(
           value: context.read<CardBloc>(),
-          child: BlocConsumer<CardBloc, CardState>(
-            listenWhen: (previous, current) =>
-                previous.securityToken != current.securityToken ||
-                previous.isLoading != current.isLoading ||
-                previous.error != current.error,
-            listener: (context, state) {
-              if (state.securityToken != null && tokenController.text.isEmpty) {
-                // Auto-fill and Toast
-                tokenController.text = state.securityToken!;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Row(
-                      children: [
-                        const Icon(Icons.notifications_active,
-                            color: Colors.white),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Token recibido: ${state.securityToken!.replaceAll(RegExp(r'.'), '*')}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
-                    backgroundColor: AppColors.primary,
-                    behavior: SnackBarBehavior.floating,
-                    duration: const Duration(seconds: 4),
-                  ),
-                );
-              }
-              if (!state.isLoading &&
-                  state.error == null &&
-                  state.securityToken == null) {
-                Navigator.of(modalContext).pop();
-              }
-            },
-            builder: (context, state) {
-              return Padding(
-                padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom,
-                    left: 24,
-                    right: 24,
-                    top: 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(freeze ? 'Congelar Tarjeta' : 'Activar Tarjeta',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 16),
-                    Text(
-                        'Ingresa el token para ${freeze ? 'congelar' : 'activar'} tu tarjeta.'),
-                    const SizedBox(height: 8),
-                    if (state.securityToken != null)
-                      const Text('Token recibido y auto-completado (protegido)',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primary))
-                    else
-                      const Text('Generando token...',
-                          style: TextStyle(color: AppColors.grey500)),
-                    const SizedBox(height: 24),
-                    TextField(
-                      controller: tokenController,
-                      obscureText: true,
-                      maxLength: 6,
-                      decoration: const InputDecoration(
-                        labelText: 'Token de seguridad',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.lock_outline),
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: state.isLoading || state.securityToken == null
-                          ? null
-                          : () {
-                              context.read<CardBloc>().add(ToggleCardFreeze(
-                                  widget.accountId,
-                                  freeze,
-                                  tokenController.text));
-                            },
-                      child: state.isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white),
-                            )
-                          : const Text('Confirmar'),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              );
+          child: CardActionModal(
+            accountId: widget.accountId,
+            isFreezeAction: true,
+            title: freeze ? 'Congelar Tarjeta' : 'Activar Tarjeta',
+            description:
+                'Ingresa el token para ${freeze ? 'congelar' : 'activar'} tu tarjeta.',
+            onConfirm: (token) {
+              context
+                  .read<CardBloc>()
+                  .add(ToggleCardFreeze(widget.accountId, freeze, token));
             },
           ),
         );
