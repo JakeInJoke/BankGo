@@ -16,22 +16,10 @@ class QuickActionsWidget extends StatelessWidget {
       route: AppRouter.transactions,
     ),
     _QuickAction(
-      label: AppStrings.requestMoney,
-      icon: Icons.call_received_rounded,
-      color: AppColors.accent,
-      route: AppRouter.transactions,
-    ),
-    _QuickAction(
       label: AppStrings.payBills,
       icon: Icons.receipt_long_rounded,
       color: AppColors.warning,
-      route: AppRouter.transactions,
-    ),
-    _QuickAction(
-      label: AppStrings.topUp,
-      icon: Icons.add_card_rounded,
-      color: AppColors.secondary,
-      route: AppRouter.accounts,
+      route: AppRouter.payment,
     ),
   ];
 
@@ -46,7 +34,7 @@ class QuickActionsWidget extends StatelessWidget {
         ),
         const SizedBox(height: AppDimensions.spaceMD),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: _actions
               .map((action) => _QuickActionButton(action: action))
               .toList(),

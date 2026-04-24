@@ -20,7 +20,8 @@ class AppStrings {
   static const String noAccount = '¿No tienes una cuenta?';
   static const String register = 'Regístrate';
   static const String logout = 'Cerrar sesión';
-  static const String logoutConfirm = '¿Estás seguro de que deseas cerrar sesión?';
+  static const String logoutConfirm =
+      '¿Estás seguro de que deseas cerrar sesión?';
 
   // ─── Dashboard ────────────────────────────────────────────────────────────────
   static const String goodMorning = 'Buenos días';
@@ -75,13 +76,16 @@ class AppStrings {
   static const String generalError = 'Ocurrió un error. Intenta de nuevo.';
   static const String networkError = 'Error de conexión. Verifica tu internet.';
   static const String serverError = 'Error del servidor. Intenta más tarde.';
-  static const String unauthorizedError = 'Sesión expirada. Inicia sesión nuevamente.';
-  static const String timeoutError = 'La solicitud tardó demasiado. Intenta de nuevo.';
+  static const String unauthorizedError =
+      'Sesión expirada. Inicia sesión nuevamente.';
+  static const String timeoutError =
+      'La solicitud tardó demasiado. Intenta de nuevo.';
 
   // ─── Validation ───────────────────────────────────────────────────────────────
   static const String fieldRequired = 'Este campo es requerido';
   static const String invalidEmail = 'Ingresa un correo válido';
-  static const String passwordTooShort = 'La contraseña debe tener al menos 8 caracteres';
+  static const String passwordTooShort =
+      'La contraseña debe tener al menos 8 caracteres';
   static const String invalidAmount = 'Ingresa un monto válido';
 
   // ─── Buttons ──────────────────────────────────────────────────────────────────

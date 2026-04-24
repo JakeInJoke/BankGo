@@ -7,10 +7,14 @@ class Validators {
 
   static final RegExp _phoneRegex = RegExp(r'^\+?[0-9]{10,15}$');
 
+  static final RegExp _passwordRegex = RegExp(
+    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$',
+  );
+
   /// Returns an error message or null if valid.
   static String? validateEmail(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'El correo es requerido';
+      return 'Este campo es requerido';
     }
     if (!_emailRegex.hasMatch(value.trim())) {
       return 'Ingresa un correo válido';
@@ -19,9 +23,12 @@ class Validators {
   }
 
   static String? validatePassword(String? value) {
-    if (value == null || value.isEmpty) return 'La contraseña es requerida';
+    if (value == null || value.isEmpty) return 'Este campo es requerido';
     if (value.length < 8) {
       return 'La contraseña debe tener al menos 8 caracteres';
+    }
+    if (!_passwordRegex.hasMatch(value)) {
+      return 'La contraseña debe incluir mayúsculas, minúsculas, números y caracteres especiales';
     }
     return null;
   }
@@ -34,7 +41,7 @@ class Validators {
   }
 
   static String? validateAmount(String? value) {
-    if (value == null || value.trim().isEmpty) return 'El monto es requerido';
+    if (value == null || value.trim().isEmpty) return 'Este campo es requerido';
     final amount = double.tryParse(value.replaceAll(',', ''));
     if (amount == null) return 'Ingresa un monto válido';
     if (amount <= 0) return 'El monto debe ser mayor a cero';
@@ -50,5 +57,5 @@ class Validators {
   }
 
   static bool isValidEmail(String email) => _emailRegex.hasMatch(email.trim());
-  static bool isValidPassword(String password) => password.length >= 8;
+  static bool isValidPassword(String password) => _passwordRegex.hasMatch(password);
 }

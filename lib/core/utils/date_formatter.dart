@@ -12,16 +12,13 @@ class DateFormatter {
 
   static String formatDate(DateTime date) => _dateFormat.format(date);
 
-  static String formatDateTime(DateTime date) =>
-      _dateTimeFormat.format(date);
+  static String formatDateTime(DateTime date) => _dateTimeFormat.format(date);
 
   static String formatTime(DateTime date) => _timeFormat.format(date);
 
-  static String formatMonthYear(DateTime date) =>
-      _monthYearFormat.format(date);
+  static String formatMonthYear(DateTime date) => _monthYearFormat.format(date);
 
-  static String formatShortDate(DateTime date) =>
-      _shortDateFormat.format(date);
+  static String formatShortDate(DateTime date) => _shortDateFormat.format(date);
 
   /// Returns a relative time string (e.g., "Hace 2 horas")
   static String formatRelative(DateTime date) {

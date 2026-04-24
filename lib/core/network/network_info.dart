@@ -1,13 +1,20 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
+
 abstract class NetworkInfo {
   Future<bool> get isConnected;
 }
 
 class NetworkInfoImpl implements NetworkInfo {
+  final Connectivity connectivity;
+
+  NetworkInfoImpl(this.connectivity);
+
   @override
   Future<bool> get isConnected async {
-    // In production, integrate connectivity_plus package:
-    // final connectivityResult = await Connectivity().checkConnectivity();
-    // return connectivityResult != ConnectivityResult.none;
+    final connectivityResult = await connectivity.checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      return false;
+    }
     return true;
   }
 }

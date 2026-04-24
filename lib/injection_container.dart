@@ -1,9 +1,12 @@
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'package:bank_go/core/mocks/mock_bank_api.dart';
 import 'package:bank_go/core/network/network_info.dart';
+import 'package:bank_go/core/network/dio_interceptor.dart';
+import 'package:bank_go/core/network/mock_interceptor.dart';
 import 'package:bank_go/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:bank_go/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:bank_go/features/auth/data/repositories/auth_repository_impl.dart';
@@ -30,22 +33,42 @@ Future<void> init() async {
   // ─── External ────────────────────────────────────────────────────────────────
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPreferences);
+  sl.registerLazySingleton(() => Connectivity());
 
-  sl.registerLazySingleton(() => Dio(
-        BaseOptions(
-          baseUrl: 'https://api.bankgo.com/v1',
-          connectTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-        ),
-      ));
   sl.registerLazySingleton(() => const MockBankApi());
 
+  sl.registerLazySingleton(() {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: 'https://api.bankgo.com/v1',
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
+
+    // Add Security Interceptor
+    dio.interceptors.add(DioInterceptor(
+        getAccessToken: () {
+            try {
+               return sl<AuthLocalDataSource>().getUserSync()?.token;
+            } catch (_) {
+               return null;
+            }
+        }
+    ));
+
+    // Add Mock Interceptor
+    dio.interceptors.add(MockInterceptor(mockBankApi: sl()));
+
+    return dio;
+  });
+
   // ─── Core ─────────────────────────────────────────────────────────────────────
-  sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl());
+  sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
 
   // ─── Features: Auth ───────────────────────────────────────────────────────────
   // BLoC
