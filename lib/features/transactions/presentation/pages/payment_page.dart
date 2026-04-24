@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
 import 'package:bank_go/core/constants/app_strings.dart';
+import 'package:bank_go/core/routes/app_router.dart';
 
 class PaymentPage extends StatelessWidget {
   const PaymentPage({super.key});
@@ -29,18 +30,24 @@ class PaymentPage extends StatelessWidget {
               icon: Icons.water_drop,
               name: 'Agua',
               color: AppColors.info,
+              onTapRoute: AppRouter.servicePayment,
+              serviceArgument: 'Agua (SACMEX)',
             ),
             const SizedBox(height: AppDimensions.spaceSM),
             const _ServiceCard(
               icon: Icons.electric_bolt,
               name: 'Electricidad',
               color: AppColors.warning,
+              onTapRoute: AppRouter.servicePayment,
+              serviceArgument: 'Luz (CFE)',
             ),
             const SizedBox(height: AppDimensions.spaceSM),
             const _ServiceCard(
               icon: Icons.wifi,
               name: 'Internet',
               color: AppColors.primary,
+              onTapRoute: AppRouter.servicePayment,
+              serviceArgument: 'Internet (Telmex)',
             ),
             const SizedBox(height: AppDimensions.spaceXL),
             Text(
@@ -61,7 +68,8 @@ class PaymentPage extends StatelessWidget {
                 labelText: 'Monto a pagar',
                 prefixIcon: Icon(Icons.attach_money),
               ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
             ),
             const SizedBox(height: AppDimensions.spaceXL),
             SizedBox(
@@ -86,11 +94,15 @@ class _ServiceCard extends StatelessWidget {
   final IconData icon;
   final String name;
   final Color color;
+  final String onTapRoute;
+  final String serviceArgument;
 
   const _ServiceCard({
     required this.icon,
     required this.name,
     required this.color,
+    required this.onTapRoute,
+    required this.serviceArgument,
   });
 
   @override
@@ -113,7 +125,11 @@ class _ServiceCard extends StatelessWidget {
         title: Text(name, style: Theme.of(context).textTheme.titleMedium),
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
-          // Select service logic
+          Navigator.pushNamed(
+            context,
+            onTapRoute,
+            arguments: serviceArgument,
+          );
         },
       ),
     );

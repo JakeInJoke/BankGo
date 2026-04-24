@@ -6,16 +6,22 @@ import 'package:shimmer/shimmer.dart';
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
 import 'package:bank_go/core/constants/app_strings.dart';
+import 'package:bank_go/core/mocks/mock_bank_api.dart';
 import 'package:bank_go/core/routes/app_router.dart';
+import 'package:bank_go/core/utils/currency_formatter.dart';
+import 'package:bank_go/features/accounts/data/models/account_model.dart';
+import 'package:bank_go/features/accounts/domain/entities/account.dart';
 import 'package:bank_go/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:bank_go/features/auth/presentation/bloc/auth_event.dart';
 import 'package:bank_go/features/auth/presentation/bloc/auth_state.dart';
 import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_state.dart';
-import 'package:bank_go/features/dashboard/presentation/widgets/account_card.dart';
+import 'package:bank_go/features/dashboard/presentation/bloc/simulation_bloc.dart';
+import 'package:bank_go/features/dashboard/presentation/pages/notifications_page.dart';
 import 'package:bank_go/features/dashboard/presentation/widgets/quick_actions_widget.dart';
 import 'package:bank_go/features/dashboard/presentation/widgets/transaction_tile.dart';
+import 'package:bank_go/injection_container.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -54,9 +60,50 @@ class _DashboardView extends StatelessWidget {
           },
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
+          BlocBuilder<SimulationBloc, SimulationState>(
+            builder: (context, simulationState) {
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const NotificationsPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  if (simulationState.unreadCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.error,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(minWidth: 18),
+                        child: Text(
+                          simulationState.unreadCount > 99
+                              ? '99+'
+                              : simulationState.unreadCount.toString(),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
           IconButton(
             icon: const Icon(Icons.logout_outlined),
@@ -90,15 +137,19 @@ class _DashboardView extends StatelessWidget {
   Widget _buildContent(BuildContext context, DashboardLoaded state) {
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(AppDimensions.paddingPage),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingPage,
+        vertical: AppDimensions.spaceLG,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AccountCard(summary: state.accountSummary),
-          const SizedBox(height: AppDimensions.spaceLG),
+          const _DashboardAccountsCarousel(),
+          const SizedBox(height: AppDimensions.spaceXL),
           const QuickActionsWidget(),
-          const SizedBox(height: AppDimensions.spaceLG),
+          const SizedBox(height: AppDimensions.spaceXL),
           _buildRecentTransactions(context, state),
+          const SizedBox(height: AppDimensions.spaceLG),
         ],
       ),
     );
@@ -332,6 +383,234 @@ class _BottomNavigationBar extends StatelessWidget {
           icon: Icon(Icons.person_outline),
           activeIcon: Icon(Icons.person),
           label: AppStrings.profile,
+        ),
+      ],
+    );
+  }
+}
+
+class _DashboardAccountsCarousel extends StatefulWidget {
+  const _DashboardAccountsCarousel();
+
+  @override
+  State<_DashboardAccountsCarousel> createState() =>
+      _DashboardAccountsCarouselState();
+}
+
+class _DashboardAccountsCarouselState
+    extends State<_DashboardAccountsCarousel> {
+  final PageController _pageController = PageController();
+  List<AccountModel> _accounts = const [];
+  bool _isLoading = true;
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAccounts();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadAccounts() async {
+    setState(() => _isLoading = true);
+    try {
+      final response = await sl<MockBankApi>().getAccounts();
+      if (!mounted) return;
+      setState(() {
+        _accounts = response.map(AccountModel.fromJson).toList();
+        _isLoading = false;
+        if (_currentPage >= _accounts.length) {
+          _currentPage = _accounts.isEmpty ? 0 : _accounts.length - 1;
+        }
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const SizedBox(
+        height: 170,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_accounts.isEmpty) {
+      return const SizedBox(
+        height: 120,
+        child: Center(child: Text('No hay cuentas disponibles.')),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppDimensions.spaceSM),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Tus cuentas',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              Text(
+                '${_currentPage + 1}/${_accounts.length}',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 170,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: _accounts.length,
+            onPageChanged: (index) => setState(() => _currentPage = index),
+            itemBuilder: (context, index) {
+              final account = _accounts[index];
+              return Padding(
+                padding: const EdgeInsets.only(right: AppDimensions.spaceSM),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                  onTap: account.isLinkedToCard
+                      ? () => Navigator.pushNamed(
+                            context,
+                            AppRouter.cardDetails,
+                            arguments: account,
+                          )
+                      : null,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          AppColors.primary,
+                          AppColors.primaryDark,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.radiusXL),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.3),
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(AppDimensions.paddingCard),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          account.alias,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                        const SizedBox(height: AppDimensions.spaceXS),
+                        Text(
+                          account.type == AccountType.credit
+                              ? 'Tarjeta de crédito'
+                              : 'Cuenta bancaria',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                  ),
+                        ),
+                        const Spacer(),
+                        if (account.type == AccountType.credit) ...[
+                          Text(
+                            'Disponible',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                ),
+                          ),
+                          Text(
+                            CurrencyFormatter.format(account.remainingCredit),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          const SizedBox(height: AppDimensions.spaceXS),
+                          Row(
+                            children: [
+                              Text(
+                                'Usado: ${CurrencyFormatter.format(account.consumption ?? 0)}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.75),
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ] else ...[
+                          Text(
+                            'Saldo disponible',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                ),
+                          ),
+                          Text(
+                            CurrencyFormatter.format(account.balance),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                        ],
+                        const SizedBox(height: AppDimensions.spaceXS),
+                        Text(
+                          account.maskedNumber,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.85),
+                                    letterSpacing: 1.5,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       ],
     );

@@ -8,6 +8,10 @@ class UserModel extends User {
     super.phone,
     super.avatarUrl,
     super.token,
+    super.accessToken,
+    super.idToken,
+    super.tokenType,
+    super.expiresIn,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -18,6 +22,10 @@ class UserModel extends User {
       phone: json['phone'] as String?,
       avatarUrl: json['avatar_url'] as String?,
       token: json['token'] as String?,
+      accessToken: json['access_token'] as String?,
+      idToken: json['id_token'] as String?,
+      tokenType: json['token_type'] as String?,
+      expiresIn: json['expires_in'] as int?,
     );
   }
 
@@ -29,6 +37,10 @@ class UserModel extends User {
       'phone': phone,
       'avatar_url': avatarUrl,
       'token': token,
+      'access_token': accessToken,
+      'id_token': idToken,
+      'token_type': tokenType,
+      'expires_in': expiresIn,
     };
   }
 
@@ -40,6 +52,10 @@ class UserModel extends User {
       phone: user.phone,
       avatarUrl: user.avatarUrl,
       token: user.token,
+      accessToken: user.accessToken,
+      idToken: user.idToken,
+      tokenType: user.tokenType,
+      expiresIn: user.expiresIn,
     );
   }
 }

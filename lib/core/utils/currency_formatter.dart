@@ -4,13 +4,13 @@ class CurrencyFormatter {
   CurrencyFormatter._();
 
   static final NumberFormat _currencyFormat = NumberFormat.currency(
-    locale: 'es_MX',
-    symbol: '\$',
+    locale: 'es_PE',
+    symbol: 'S/',
     decimalDigits: 2,
   );
 
   static final NumberFormat _compactFormat = NumberFormat.compact(
-    locale: 'es_MX',
+    locale: 'es_PE',
   );
 
   /// Formats [amount] as currency (e.g., $1,234.56)

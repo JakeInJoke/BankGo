@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
@@ -27,12 +28,17 @@ import 'package:bank_go/features/transactions/domain/repositories/transactions_r
 import 'package:bank_go/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:bank_go/features/transactions/presentation/bloc/transactions_bloc.dart';
 
+import 'package:bank_go/features/accounts/presentation/bloc/card_bloc.dart';
+import 'package:bank_go/features/dashboard/presentation/bloc/simulation_bloc.dart';
+import 'package:bank_go/features/transactions/presentation/bloc/transfer_bloc.dart';
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
   // ─── External ────────────────────────────────────────────────────────────────
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPreferences);
+  sl.registerLazySingleton(() => const FlutterSecureStorage());
   sl.registerLazySingleton(() => Connectivity());
 
   sl.registerLazySingleton(() => const MockBankApi());
@@ -51,15 +57,13 @@ Future<void> init() async {
     );
 
     // Add Security Interceptor
-    dio.interceptors.add(DioInterceptor(
-        getAccessToken: () {
-            try {
-               return sl<AuthLocalDataSource>().getUserSync()?.token;
-            } catch (_) {
-               return null;
-            }
-        }
-    ));
+    dio.interceptors.add(DioInterceptor(getAccessToken: () {
+      try {
+        return sl<AuthLocalDataSource>().getUserSync()?.token;
+      } catch (_) {
+        return null;
+      }
+    }));
 
     // Add Mock Interceptor
     dio.interceptors.add(MockInterceptor(mockBankApi: sl()));
@@ -96,7 +100,10 @@ Future<void> init() async {
     () => AuthRemoteDataSourceImpl(mockBankApi: sl()),
   );
   sl.registerLazySingleton<AuthLocalDataSource>(
-    () => AuthLocalDataSourceImpl(sharedPreferences: sl()),
+    () => AuthLocalDataSourceImpl(
+      sharedPreferences: sl(),
+      secureStorage: sl(),
+    ),
   );
 
   // ─── Features: Dashboard ──────────────────────────────────────────────────────
@@ -107,6 +114,7 @@ Future<void> init() async {
       getRecentTransactionsUseCase: sl(),
     ),
   );
+  sl.registerFactory(() => SimulationBloc());
   // Use cases
   sl.registerLazySingleton(() => GetAccountSummaryUseCase(sl()));
   sl.registerLazySingleton(() => GetRecentTransactionsUseCase(sl()));
@@ -123,10 +131,15 @@ Future<void> init() async {
   );
 
   // ─── Features: Transactions ───────────────────────────────────────────────────
-  // BLoC
   sl.registerFactory(
     () => TransactionsBloc(getTransactionsUseCase: sl()),
   );
+  sl.registerFactory(() => TransferBloc(sl()));
+
+  // ─── Features: Accounts ───────────────────────────────────────────────────────
+  // BLoC
+  sl.registerFactory(() => CardBloc(sl(), sl()));
+
   // Use cases
   sl.registerLazySingleton(() => GetTransactionsUseCase(sl()));
   // Repository

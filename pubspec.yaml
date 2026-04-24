@@ -36,6 +36,7 @@ dependencies:
   dartz: ^0.10.1
   logger: ^2.0.2+1
   connectivity_plus: ^7.1.1
+  crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:

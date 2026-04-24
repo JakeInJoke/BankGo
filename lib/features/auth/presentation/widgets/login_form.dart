@@ -4,11 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
 import 'package:bank_go/core/constants/app_strings.dart';
-import 'package:bank_go/core/utils/validators.dart';
+import 'package:bank_go/core/mocks/mock_bank_api.dart';
 import 'package:bank_go/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:bank_go/features/auth/presentation/bloc/auth_event.dart';
 import 'package:bank_go/features/auth/presentation/bloc/auth_state.dart';
-import 'package:bank_go/features/auth/presentation/widgets/custom_text_field.dart';
+import 'package:bank_go/features/auth/presentation/widgets/secure_numeric_keypad.dart';
+
+import 'package:bank_go/features/auth/presentation/widgets/pin_indicator.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -18,91 +20,107 @@ class LoginForm extends StatefulWidget {
 }
 
 class _LoginFormState extends State<LoginForm> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  static const String _demoPin = '123456';
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
+  String _pin = "";
+  final int _pinLength = 6;
+
+  void _onDigitPressed(String digit) {
+    if (_pin.length < _pinLength) {
+      setState(() {
+        _pin += digit;
+      });
+      if (_pin.length == _pinLength) {
+        _onSubmit();
+      }
+    }
+  }
+
+  void _onDeletePressed() {
+    if (_pin.isNotEmpty) {
+      setState(() {
+        _pin = _pin.substring(0, _pin.length - 1);
+      });
+    }
+  }
+
+  void _onClearPressed() {
+    setState(() {
+      _pin = "";
+    });
   }
 
   void _onSubmit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      context.read<AuthBloc>().add(
-            AuthLoginRequested(
-              email: _emailController.text.trim(),
-              password: _passwordController.text,
-            ),
-          );
+    if (_pin.length != _pinLength) {
+      return;
     }
+
+    if (_pin != _demoPin) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('PIN inválido. Usa 123456 para demo.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      setState(() {
+        _pin = '';
+      });
+      return;
+    }
+
+    context.read<AuthBloc>().add(
+          const AuthLoginRequested(
+            email: MockBankApi.demoEmail,
+            password: MockBankApi.demoPassword,
+          ),
+        );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          CustomTextField(
-            label: AppStrings.emailLabel,
-            hint: AppStrings.emailHint,
-            controller: _emailController,
-            validator: Validators.validateEmail,
-            keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.next,
-            prefixIcon: const Icon(Icons.email_outlined),
-          ),
-          const SizedBox(height: AppDimensions.spaceMD),
-          CustomTextField(
-            label: AppStrings.passwordLabel,
-            hint: AppStrings.passwordHint,
-            controller: _passwordController,
-            validator: Validators.validatePassword,
-            obscureText: true,
-            textInputAction: TextInputAction.done,
-            onFieldSubmitted: (_) => _onSubmit(),
-            prefixIcon: const Icon(Icons.lock_outline),
-          ),
-          const SizedBox(height: AppDimensions.spaceXS),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () {},
-              child: const Text(AppStrings.forgotPassword),
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        final isLoading = state is AuthLoading;
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: PinIndicator(
+                length: _pinLength,
+                filledCount: _pin.length,
+              ),
             ),
-          ),
-          const SizedBox(height: AppDimensions.spaceMD),
-          BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, state) {
-              final isLoading = state is AuthLoading;
-              return ElevatedButton(
-                onPressed: isLoading ? null : _onSubmit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  disabledBackgroundColor:
-                      AppColors.primary.withValues(alpha: 0.6),
+            const SizedBox(height: AppDimensions.spaceXXL),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Opacity(
+                  opacity: isLoading ? 0.3 : 1.0,
+                  child: AbsorbPointer(
+                    absorbing: isLoading,
+                    child: SecureNumericKeypad(
+                      onDigitPressed: _onDigitPressed,
+                      onDeletePressed: _onDeletePressed,
+                      onClearPressed: _onClearPressed,
+                    ),
+                  ),
                 ),
-                child: isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.white,
-                          ),
-                        ),
-                      )
-                    : const Text(AppStrings.loginButton),
-              );
-            },
-          ),
-        ],
-      ),
+                if (isLoading)
+                  const CircularProgressIndicator(),
+              ],
+            ),
+            const SizedBox(height: AppDimensions.spaceMD),
+            Align(
+              alignment: Alignment.center,
+              child: TextButton(
+                onPressed: isLoading ? null : () {},
+                child: const Text(AppStrings.forgotPassword),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

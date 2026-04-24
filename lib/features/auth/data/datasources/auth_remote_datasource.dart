@@ -1,5 +1,6 @@
 import 'package:bank_go/core/errors/exceptions.dart';
 import 'package:bank_go/core/mocks/mock_bank_api.dart';
+import 'package:bank_go/core/utils/pkce_helper.dart';
 import 'package:bank_go/features/auth/data/models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
@@ -17,9 +18,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String password,
   }) async {
     try {
+      // Generate PKCE code_verifier and code_challenge
+      final pkceCodePair = PkceHelper.generatePkceCodePair();
+      final codeChallenge = pkceCodePair['challenge']!;
+
       final response = await mockBankApi.login(
         email: email,
         password: password,
+        codeChallenge: codeChallenge,
       );
       return UserModel.fromJson(response);
     } on UnauthorizedException {

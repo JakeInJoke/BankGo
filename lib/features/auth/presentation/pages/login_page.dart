@@ -7,7 +7,9 @@ import 'package:bank_go/core/constants/app_strings.dart';
 import 'package:bank_go/core/routes/app_router.dart';
 import 'package:bank_go/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:bank_go/features/auth/presentation/bloc/auth_state.dart';
-import 'package:bank_go/features/auth/presentation/widgets/login_form.dart';
+import 'package:bank_go/features/auth/presentation/widgets/email_password_login_form.dart';
+
+import 'package:bank_go/features/auth/presentation/widgets/auth_header.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -17,7 +19,8 @@ class LoginPage extends StatelessWidget {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          Navigator.pushReplacementNamed(context, AppRouter.dashboard);
+          // After successful initial login, we go to PIN setup as requested
+          Navigator.pushReplacementNamed(context, AppRouter.pinSetup);
         } else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -31,82 +34,26 @@ class LoginPage extends StatelessWidget {
           );
         }
       },
-      child: Scaffold(
+      child: const Scaffold(
         backgroundColor: AppColors.backgroundLight,
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppDimensions.paddingPage),
+            padding: EdgeInsets.all(AppDimensions.paddingPage),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: AppDimensions.spaceXXL),
-                _buildHeader(context),
-                const SizedBox(height: AppDimensions.spaceXXL),
-                const LoginForm(),
-                const SizedBox(height: AppDimensions.spaceLG),
-                _buildRegisterRow(context),
+                SizedBox(height: AppDimensions.spaceXXL),
+                AuthHeader(
+                  title: AppStrings.welcomeBack,
+                  subtitle: AppStrings.loginSubtitle,
+                ),
+                SizedBox(height: AppDimensions.spaceXXL),
+                EmailPasswordLoginForm(),
               ],
             ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-          ),
-          child: const Icon(
-            Icons.account_balance,
-            color: AppColors.white,
-            size: AppDimensions.iconLG,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spaceMD),
-        Text(
-          AppStrings.welcomeBack,
-          style: Theme.of(context).textTheme.displaySmall,
-        ),
-        const SizedBox(height: AppDimensions.spaceXS),
-        Text(
-          AppStrings.loginSubtitle,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.grey500,
-              ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRegisterRow(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          AppStrings.noAccount,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        TextButton(
-          onPressed: () {
-            // Navigate to register page (future feature)
-          },
-          child: Text(
-            AppStrings.register,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-        ),
-      ],
     );
   }
 }

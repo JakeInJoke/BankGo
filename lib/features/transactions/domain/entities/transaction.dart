@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum TransactionType { income, expense, transfer }
+enum TransactionType { income, expense, transfer, service }
 
 enum TransactionStatus { completed, pending, failed }
 

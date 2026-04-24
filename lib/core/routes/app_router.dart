@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 
 import 'package:bank_go/features/auth/presentation/pages/login_page.dart';
+import 'package:bank_go/features/auth/presentation/pages/pin_login_page.dart';
+import 'package:bank_go/features/auth/presentation/pages/pin_setup_page.dart';
 import 'package:bank_go/features/auth/presentation/pages/splash_page.dart';
 import 'package:bank_go/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:bank_go/features/accounts/presentation/pages/accounts_page.dart';
@@ -8,16 +12,27 @@ import 'package:bank_go/features/transactions/presentation/pages/transactions_pa
 import 'package:bank_go/features/transactions/presentation/pages/payment_page.dart';
 import 'package:bank_go/features/profile/presentation/pages/profile_page.dart';
 
+import 'package:bank_go/features/transactions/presentation/pages/transfer_wizard_page.dart';
+import 'package:bank_go/features/accounts/presentation/pages/card_details_page.dart';
+import 'package:bank_go/features/transactions/presentation/pages/service_payment_page.dart';
+import 'package:bank_go/features/accounts/domain/entities/account.dart';
+import 'package:bank_go/features/accounts/presentation/bloc/card_bloc.dart';
+
 class AppRouter {
   AppRouter._();
 
   static const String splash = '/';
   static const String login = '/login';
+  static const String pinSetup = '/pin-setup';
+  static const String pinLogin = '/pin-login';
   static const String dashboard = '/dashboard';
   static const String accounts = '/accounts';
   static const String transactions = '/transactions';
   static const String payment = '/payment';
   static const String profile = '/profile';
+  static const String transferWizard = '/transfer-wizard';
+  static const String cardDetails = '/card-details';
+  static const String servicePayment = '/service-payment';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -25,6 +40,10 @@ class AppRouter {
         return _fadeRoute(const SplashPage(), settings);
       case login:
         return _fadeRoute(const LoginPage(), settings);
+      case pinSetup:
+        return _fadeRoute(const PinSetupPage(), settings);
+      case pinLogin:
+        return _fadeRoute(const PinLoginPage(), settings);
       case dashboard:
         return _fadeRoute(const DashboardPage(), settings);
       case accounts:
@@ -35,6 +54,23 @@ class AppRouter {
         return _slideRoute(const PaymentPage(), settings);
       case profile:
         return _slideRoute(const ProfilePage(), settings);
+      case transferWizard:
+        return _slideRoute(const TransferWizardPage(), settings);
+      case cardDetails:
+        final account = settings.arguments as Account;
+        return _slideRoute(
+          BlocProvider(
+            create: (_) => GetIt.instance<CardBloc>(),
+            child: CardDetailsPage(account: account),
+          ),
+          settings,
+        );
+      case servicePayment:
+        final initialService = settings.arguments as String?;
+        return _slideRoute(
+          ServicePaymentPage(initialService: initialService),
+          settings,
+        );
       default:
         return _fadeRoute(
           Scaffold(

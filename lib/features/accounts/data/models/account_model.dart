@@ -9,6 +9,9 @@ class AccountModel extends Account {
     required super.balance,
     required super.currency,
     super.isDefault,
+    super.isLinkedToCard,
+    super.creditLimit,
+    super.consumption,
   });
 
   factory AccountModel.fromJson(Map<String, dynamic> json) {
@@ -21,8 +24,11 @@ class AccountModel extends Account {
         orElse: () => AccountType.savings,
       ),
       balance: (json['balance'] as num).toDouble(),
-      currency: json['currency'] as String? ?? 'MXN',
+      currency: json['currency'] as String? ?? 'PEN',
       isDefault: json['is_default'] as bool? ?? false,
+      isLinkedToCard: json['is_linked_to_card'] as bool? ?? false,
+      creditLimit: (json['credit_limit'] as num?)?.toDouble(),
+      consumption: (json['consumption'] as num?)?.toDouble(),
     );
   }
 
@@ -34,8 +40,9 @@ class AccountModel extends Account {
         alias: 'Cuenta Principal',
         type: AccountType.savings,
         balance: 24350.80,
-        currency: 'MXN',
+        currency: 'PEN',
         isDefault: true,
+        isLinkedToCard: true,
       ),
       const AccountModel(
         id: '2',
@@ -43,7 +50,9 @@ class AccountModel extends Account {
         alias: 'Cuenta Corriente',
         type: AccountType.checking,
         balance: 8750.00,
-        currency: 'MXN',
+        currency: 'PEN',
+        isDefault: false,
+        isLinkedToCard: true,
       ),
       const AccountModel(
         id: '3',
@@ -51,7 +60,11 @@ class AccountModel extends Account {
         alias: 'Tarjeta de Crédito',
         type: AccountType.credit,
         balance: -3200.50,
-        currency: 'MXN',
+        currency: 'PEN',
+        isDefault: false,
+        isLinkedToCard: true,
+        creditLimit: 50000.00,
+        consumption: 3200.50,
       ),
     ];
   }

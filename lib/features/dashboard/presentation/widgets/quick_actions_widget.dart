@@ -1,27 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
 import 'package:bank_go/core/constants/app_strings.dart';
-import 'package:bank_go/core/routes/app_router.dart';
+import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_event.dart';
 
 class QuickActionsWidget extends StatelessWidget {
   const QuickActionsWidget({super.key});
-
-  static const List<_QuickAction> _actions = [
-    _QuickAction(
-      label: AppStrings.sendMoney,
-      icon: Icons.send_rounded,
-      color: AppColors.primary,
-      route: AppRouter.transactions,
-    ),
-    _QuickAction(
-      label: AppStrings.payBills,
-      icon: Icons.receipt_long_rounded,
-      color: AppColors.warning,
-      route: AppRouter.payment,
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -30,14 +17,43 @@ class QuickActionsWidget extends StatelessWidget {
       children: [
         Text(
           AppStrings.quickActions,
-          style: Theme.of(context).textTheme.titleLarge,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: AppDimensions.spaceMD),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: _actions
-              .map((action) => _QuickActionButton(action: action))
-              .toList(),
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _QuickActionButton(
+              label: AppStrings.sendMoney,
+              icon: Icons.send_rounded,
+              color: AppColors.primary,
+              onTap: () async {
+                final result =
+                    await Navigator.pushNamed(context, '/transfer-wizard');
+                if (result == true && context.mounted) {
+                  context
+                      .read<DashboardBloc>()
+                      .add(const DashboardRefreshRequested());
+                }
+              },
+            ),
+            _QuickActionButton(
+              label: "Servicios",
+              icon: Icons.receipt_long_rounded,
+              color: AppColors.warning,
+              onTap: () async {
+                final result =
+                    await Navigator.pushNamed(context, '/service-payment');
+                if (result == true && context.mounted) {
+                  context
+                      .read<DashboardBloc>()
+                      .add(const DashboardRefreshRequested());
+                }
+              },
+            ),
+          ],
         ),
       ],
     );
@@ -45,51 +61,49 @@ class QuickActionsWidget extends StatelessWidget {
 }
 
 class _QuickActionButton extends StatelessWidget {
-  final _QuickAction action;
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
 
-  const _QuickActionButton({required this.action});
+  const _QuickActionButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, action.route),
+      onTap: onTap,
       child: Column(
         children: [
           Container(
-            width: AppDimensions.quickActionSize,
-            height: AppDimensions.quickActionSize,
+            width: 70,
+            height: 70,
             decoration: BoxDecoration(
-              color: action.color.withValues(alpha: 0.12),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+              border: Border.all(color: color.withValues(alpha: 0.1), width: 1),
             ),
             child: Icon(
-              action.icon,
-              color: action.color,
-              size: AppDimensions.iconLG,
+              icon,
+              color: color,
+              size: 30,
             ),
           ),
           const SizedBox(height: AppDimensions.spaceXS),
           Text(
-            action.label,
-            style: Theme.of(context).textTheme.bodySmall,
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                ),
             textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
-}
-
-class _QuickAction {
-  final String label;
-  final IconData icon;
-  final Color color;
-  final String route;
-
-  const _QuickAction({
-    required this.label,
-    required this.icon,
-    required this.color,
-    required this.route,
-  });
 }

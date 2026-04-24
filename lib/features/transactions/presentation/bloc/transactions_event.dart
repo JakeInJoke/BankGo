@@ -26,3 +26,12 @@ class TransactionsFilterChanged extends TransactionsEvent {
   @override
   List<Object?> get props => [type];
 }
+
+class TransactionsLoadMore extends TransactionsEvent {
+  final TransactionType? type;
+
+  const TransactionsLoadMore({this.type});
+
+  @override
+  List<Object?> get props => [type];
+}

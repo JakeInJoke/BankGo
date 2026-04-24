@@ -10,6 +10,9 @@ class Account extends Equatable {
   final double balance;
   final String currency;
   final bool isDefault;
+  final bool isLinkedToCard;
+  final double? creditLimit;
+  final double? consumption;
 
   const Account({
     required this.id,
@@ -19,6 +22,9 @@ class Account extends Equatable {
     required this.balance,
     required this.currency,
     this.isDefault = false,
+    this.isLinkedToCard = false,
+    this.creditLimit,
+    this.consumption,
   });
 
   String get maskedNumber {
@@ -28,7 +34,19 @@ class Account extends Equatable {
     return accountNumber;
   }
 
+  double get remainingCredit => (creditLimit ?? 0) - (consumption ?? 0);
+
   @override
-  List<Object> get props =>
-      [id, accountNumber, alias, type, balance, currency, isDefault];
+  List<Object?> get props => [
+        id,
+        accountNumber,
+        alias,
+        type,
+        balance,
+        currency,
+        isDefault,
+        isLinkedToCard,
+        creditLimit,
+        consumption,
+      ];
 }

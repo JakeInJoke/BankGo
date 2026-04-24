@@ -3,12 +3,12 @@ import 'package:intl/intl.dart';
 class DateFormatter {
   DateFormatter._();
 
-  static final DateFormat _dateFormat = DateFormat('dd/MM/yyyy', 'es_MX');
+  static final DateFormat _dateFormat = DateFormat('dd/MM/yyyy', 'es_PE');
   static final DateFormat _dateTimeFormat =
-      DateFormat('dd/MM/yyyy HH:mm', 'es_MX');
-  static final DateFormat _timeFormat = DateFormat('HH:mm', 'es_MX');
-  static final DateFormat _monthYearFormat = DateFormat('MMMM yyyy', 'es_MX');
-  static final DateFormat _shortDateFormat = DateFormat('dd MMM', 'es_MX');
+      DateFormat('dd/MM/yyyy HH:mm', 'es_PE');
+  static final DateFormat _timeFormat = DateFormat('HH:mm', 'es_PE');
+  static final DateFormat _monthYearFormat = DateFormat('MMMM yyyy', 'es_PE');
+  static final DateFormat _shortDateFormat = DateFormat('dd MMM', 'es_PE');
 
   static String formatDate(DateTime date) => _dateFormat.format(date);
 
