@@ -93,6 +93,10 @@ android {
     }
 }
 
+dependencies {
+    implementation 'com.google.android.play:core:1.10.3'
+}
+
 if (!hasReleaseKeystore) {
     logger.lifecycle("Release keystore not found. Falling back to debug signing for release builds.")
 }
