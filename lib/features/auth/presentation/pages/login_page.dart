@@ -37,14 +37,12 @@ class LoginPage extends StatelessWidget {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppDimensions.paddingPage),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: AppDimensions.spaceXXL),
                 _buildHeader(context),
                 const SizedBox(height: AppDimensions.spaceXXL),
                 const LoginForm(),
-                const SizedBox(height: AppDimensions.spaceLG),
-                _buildRegisterRow(context),
               ],
             ),
           ),
@@ -55,56 +53,41 @@ class LoginPage extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
-          width: 56,
-          height: 56,
+          width: 80,
+          height: 80,
           decoration: BoxDecoration(
             color: AppColors.primary,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
           child: const Icon(
             Icons.account_balance,
             color: AppColors.white,
-            size: AppDimensions.iconLG,
+            size: 40,
           ),
         ),
-        const SizedBox(height: AppDimensions.spaceMD),
+        const SizedBox(height: AppDimensions.spaceLG),
         Text(
           AppStrings.welcomeBack,
-          style: Theme.of(context).textTheme.displaySmall,
+          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: AppDimensions.spaceXS),
         Text(
-          AppStrings.loginSubtitle,
+          "Enter your secure 6-digit PIN",
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: AppColors.grey500,
               ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRegisterRow(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          AppStrings.noAccount,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        TextButton(
-          onPressed: () {
-            // Navigate to register page (future feature)
-          },
-          child: Text(
-            AppStrings.register,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
         ),
       ],
     );

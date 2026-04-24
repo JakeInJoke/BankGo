@@ -4,11 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
 import 'package:bank_go/core/constants/app_strings.dart';
-import 'package:bank_go/core/utils/validators.dart';
 import 'package:bank_go/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:bank_go/features/auth/presentation/bloc/auth_event.dart';
 import 'package:bank_go/features/auth/presentation/bloc/auth_state.dart';
-import 'package:bank_go/features/auth/presentation/widgets/custom_text_field.dart';
+import 'package:bank_go/features/auth/presentation/widgets/secure_numeric_keypad.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -18,23 +17,40 @@ class LoginForm extends StatefulWidget {
 }
 
 class _LoginFormState extends State<LoginForm> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  String _pin = "";
+  final int _pinLength = 6;
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
+  void _onDigitPressed(String digit) {
+    if (_pin.length < _pinLength) {
+      setState(() {
+        _pin += digit;
+      });
+      if (_pin.length == _pinLength) {
+        _onSubmit();
+      }
+    }
+  }
+
+  void _onDeletePressed() {
+    if (_pin.isNotEmpty) {
+      setState(() {
+        _pin = _pin.substring(0, _pin.length - 1);
+      });
+    }
+  }
+
+  void _onClearPressed() {
+    setState(() {
+      _pin = "";
+    });
   }
 
   void _onSubmit() {
-    if (_formKey.currentState?.validate() ?? false) {
+    if (_pin.length == _pinLength) {
       context.read<AuthBloc>().add(
             AuthLoginRequested(
-              email: _emailController.text.trim(),
-              password: _passwordController.text,
+              email: "user@bankgo.com", // Simulated for backward compatibility
+              password: _pin,
             ),
           );
     }
@@ -42,67 +58,56 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          CustomTextField(
-            label: AppStrings.emailLabel,
-            hint: AppStrings.emailHint,
-            controller: _emailController,
-            validator: Validators.validateEmail,
-            keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.next,
-            prefixIcon: const Icon(Icons.email_outlined),
-          ),
-          const SizedBox(height: AppDimensions.spaceMD),
-          CustomTextField(
-            label: AppStrings.passwordLabel,
-            hint: AppStrings.passwordHint,
-            controller: _passwordController,
-            validator: Validators.validatePassword,
-            obscureText: true,
-            textInputAction: TextInputAction.done,
-            onFieldSubmitted: (_) => _onSubmit(),
-            prefixIcon: const Icon(Icons.lock_outline),
-          ),
-          const SizedBox(height: AppDimensions.spaceXS),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () {},
-              child: const Text(AppStrings.forgotPassword),
-            ),
-          ),
-          const SizedBox(height: AppDimensions.spaceMD),
-          BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, state) {
-              final isLoading = state is AuthLoading;
-              return ElevatedButton(
-                onPressed: isLoading ? null : _onSubmit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  disabledBackgroundColor:
-                      AppColors.primary.withValues(alpha: 0.6),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(_pinLength, (index) {
+              bool isFilled = index < _pin.length;
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isFilled ? AppColors.primary : AppColors.grey200,
+                  border: Border.all(
+                    color: isFilled ? AppColors.primary : AppColors.grey300,
+                  ),
                 ),
-                child: isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.white,
-                          ),
-                        ),
-                      )
-                    : const Text(AppStrings.loginButton),
               );
-            },
+            }),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: AppDimensions.spaceXXL),
+        BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            if (state is AuthLoading) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(AppDimensions.spaceLG),
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+            return SecureNumericKeypad(
+              onDigitPressed: _onDigitPressed,
+              onDeletePressed: _onDeletePressed,
+              onClearPressed: _onClearPressed,
+            );
+          },
+        ),
+        const SizedBox(height: AppDimensions.spaceMD),
+        Align(
+          alignment: Alignment.center,
+          child: TextButton(
+            onPressed: () {},
+            child: const Text(AppStrings.forgotPassword),
+          ),
+        ),
+      ],
     );
   }
 }
