@@ -200,7 +200,9 @@ class _AccountCardState extends State<AccountCard> {
                           ? null
                           : () {
                               context.read<CardBloc>().add(ToggleCardFreeze(
-                                  widget.accountId, freeze, tokenController.text));
+                                  widget.accountId,
+                                  freeze,
+                                  tokenController.text));
                             },
                       child: state.isLoading
                           ? const SizedBox(
@@ -297,12 +299,25 @@ class _AccountCardState extends State<AccountCard> {
           ),
         ),
         const SizedBox(width: AppDimensions.spaceSM),
-        Image.network(
-          'https://www.svgrepo.com/show/343636/mastercard.svg',
-          height: 30,
-          errorBuilder: (_, __, ___) => const Icon(
-            Icons.credit_card,
-            color: AppColors.white,
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spaceSM,
+            vertical: 6,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.white.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
+            border: Border.all(
+              color: AppColors.white.withValues(alpha: 0.22),
+            ),
+          ),
+          child: Text(
+            'BANKGO',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppColors.white,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.1,
+                ),
           ),
         ),
       ],

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
 import 'package:bank_go/core/constants/app_strings.dart';
-import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_bloc.dart';
-import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_event.dart';
+import 'package:bank_go/core/routes/app_router.dart';
 
 class QuickActionsWidget extends StatelessWidget {
   const QuickActionsWidget({super.key});
@@ -29,29 +27,19 @@ class QuickActionsWidget extends StatelessWidget {
               label: AppStrings.sendMoney,
               icon: Icons.send_rounded,
               color: AppColors.primary,
-              onTap: () async {
-                final result =
-                    await Navigator.pushNamed(context, '/transfer-wizard');
-                if (result == true && context.mounted) {
-                  context
-                      .read<DashboardBloc>()
-                      .add(const DashboardRefreshRequested());
-                }
-              },
+              onTap: () => Navigator.pushNamed(context, '/transfer-wizard'),
             ),
             _QuickActionButton(
               label: "Servicios",
               icon: Icons.receipt_long_rounded,
               color: AppColors.warning,
-              onTap: () async {
-                final result =
-                    await Navigator.pushNamed(context, '/service-payment');
-                if (result == true && context.mounted) {
-                  context
-                      .read<DashboardBloc>()
-                      .add(const DashboardRefreshRequested());
-                }
-              },
+              onTap: () => Navigator.pushNamed(context, '/service-payment'),
+            ),
+            _QuickActionButton(
+              label: "Historial",
+              icon: Icons.history_rounded,
+              color: AppColors.accent,
+              onTap: () => Navigator.pushNamed(context, AppRouter.transactions),
             ),
           ],
         ),

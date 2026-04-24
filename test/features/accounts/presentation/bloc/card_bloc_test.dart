@@ -1,26 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:bank_go/core/mocks/mock_bank_api.dart';
-import 'package:bank_go/core/network/network_info.dart';
 import 'package:bank_go/features/accounts/presentation/bloc/card_bloc.dart';
 import 'package:bank_go/features/accounts/presentation/bloc/card_event.dart';
-
-class _FakeNetworkInfo implements NetworkInfo {
-  final bool connected;
-
-  _FakeNetworkInfo(this.connected);
-
-  @override
-  Future<bool> get isConnected async => connected;
-}
 
 void main() {
   group('CardBloc', () {
     late CardBloc bloc;
+    late MockBankApi api;
 
     setUp(() {
       MockBankApi.resetState();
-      bloc = CardBloc(const MockBankApi(), _FakeNetworkInfo(true));
+      api = const MockBankApi();
+      bloc = CardBloc(api);
     });
 
     tearDown(() async {

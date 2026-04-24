@@ -10,9 +10,9 @@ class LoginUseCase {
   const LoginUseCase(this.repository);
 
   Future<Either<Failure, User>> call({
-    required String email,
+    required String dni,
     required String password,
   }) {
-    return repository.login(email: email, password: password);
+    return repository.login(dni: dni, password: password);
   }
 }

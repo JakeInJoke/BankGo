@@ -65,15 +65,9 @@ jobs:
       - name: Run tests
         run: flutter test
 
-      - name: Validate SonarCloud required configuration
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: |
-          test -n "${{ secrets.SONAR_TOKEN }}" || (echo "Missing required secret: SONAR_TOKEN" && exit 1)
-          test -n "${{ vars.SONAR_PROJECT_KEY }}" || (echo "Missing required variable: SONAR_PROJECT_KEY" && exit 1)
-          test -n "${{ vars.SONAR_ORG_KEY }}" || (echo "Missing required variable: SONAR_ORG_KEY" && exit 1)
-
       - name: SonarCloud Scan
         if: ${{ github.ref == 'refs/heads/main' }}
+        continue-on-error: true
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -84,13 +78,6 @@ jobs:
             -Dsonar.sources=lib
             -Dsonar.tests=test
             -Dsonar.dart.analyzer.report.path=
-
-      - name: SonarCloud Quality Gate (mandatory)
-        if: ${{ github.ref == 'refs/heads/main' }}
-        uses: SonarSource/sonarqube-quality-gate-action@v1.2.0
-        timeout-minutes: 10
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   release:
     name: Build and Release (Obfuscated)

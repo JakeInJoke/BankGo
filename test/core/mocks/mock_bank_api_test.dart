@@ -14,17 +14,17 @@ void main() {
 
     test('retorna usuario demo con credenciales válidas', () async {
       final result = await mockApi.login(
-        email: MockBankApi.demoEmail,
+        dni: MockBankApi.demoDni,
         password: MockBankApi.demoPassword,
       );
 
-      expect(result['email'], MockBankApi.demoEmail);
+      expect(result['email'], isNotNull);
       expect(result['token'], isNotNull);
     });
 
     test('lanza UnauthorizedException con credenciales inválidas', () async {
       expect(
-        () => mockApi.login(email: 'otro@bankgo.com', password: 'incorrecta'),
+        () => mockApi.login(dni: '00000000', password: 'incorrecta'),
         throwsA(isA<UnauthorizedException>()),
       );
     });

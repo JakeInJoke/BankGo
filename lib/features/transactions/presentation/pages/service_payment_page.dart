@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
 import 'package:bank_go/core/utils/currency_formatter.dart';
 import 'package:bank_go/features/accounts/data/models/account_model.dart';
 import 'package:bank_go/core/mocks/mock_bank_api.dart';
-import 'package:bank_go/features/dashboard/presentation/bloc/simulation_bloc.dart';
-import 'package:bank_go/features/transactions/presentation/pages/payment_error_page.dart';
 import 'package:bank_go/injection_container.dart';
 
 class ServicePaymentPage extends StatefulWidget {
@@ -73,22 +69,6 @@ class _ServicePaymentPageState extends State<ServicePaymentPage> {
       return;
     }
 
-    final sourceAccount =
-        _accounts.firstWhere((a) => a.id == _selectedAccountId);
-    final available = sourceAccount.type.name == 'credit'
-        ? sourceAccount.remainingCredit
-        : sourceAccount.balance;
-    if (amount > available) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(sourceAccount.type.name == 'credit'
-              ? 'Línea de crédito insuficiente. Disponible: ${CurrencyFormatter.format(available)}'
-              : 'Saldo insuficiente. Disponible: ${CurrencyFormatter.format(available)}'),
-        ),
-      );
-      return;
-    }
-
     setState(() => _isLoading = true);
     try {
       final api = sl<MockBankApi>();
@@ -98,22 +78,14 @@ class _ServicePaymentPageState extends State<ServicePaymentPage> {
         sourceAccountId: _selectedAccountId!,
       );
       if (mounted) {
-        context.read<SimulationBloc>().add(AddUserActionNotification(
-              title: 'Pago de servicio',
-              message:
-                  '${DateTime.now().toString().substring(0, 16)} — Pago de S/ ${amount.toStringAsFixed(2)} por $_selectedService realizado.',
-              type: NotificationType.purchase,
-            ));
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Pago realizado con éxito')));
-        Navigator.pop(context, true);
+        Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const PaymentErrorPage()),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -155,16 +127,11 @@ class _ServicePaymentPageState extends State<ServicePaymentPage> {
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     initialValue: _selectedAccountId,
-                    isExpanded: true,
                     items: _accounts
                         .map((a) => DropdownMenuItem(
                             value: a.id,
                             child: Text(
-                              a.type.name == 'credit'
-                                  ? '${a.alias} (Disponible ${CurrencyFormatter.format(a.remainingCredit)})'
-                                  : '${a.alias} (${CurrencyFormatter.format(a.balance)})',
-                              overflow: TextOverflow.ellipsis,
-                            )))
+                                '${a.alias} (${CurrencyFormatter.format(a.balance)})')))
                         .toList(),
                     onChanged: (val) =>
                         setState(() => _selectedAccountId = val),
@@ -177,11 +144,7 @@ class _ServicePaymentPageState extends State<ServicePaymentPage> {
                   const SizedBox(height: 8),
                   TextField(
                     controller: _amountController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                    ],
+                    keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
                         prefixText: '\$', border: OutlineInputBorder()),
                   ),

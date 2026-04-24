@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bank_go/core/mocks/mock_bank_api.dart';
-import 'package:bank_go/core/utils/app_logger.dart';
 import 'package:bank_go/features/transactions/presentation/bloc/transfer_event_state.dart';
 
 class TransferBloc extends Bloc<TransferEvent, TransferState> {
@@ -18,56 +17,21 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       UpdateDestinationAccount event, Emitter<TransferState> emit) async {
     emit(state.copyWith(
         status: TransferStatus.validatingAccount,
-        destinationAccount: event.accountNumber,
-        destinationAccountName: null,
-        destinationBankName: null,
-        isDestinationVerified: false,
-        error: null));
+        destinationAccount: event.accountNumber));
     final isValid = await _api.validateAccount(event.accountNumber);
     if (isValid) {
-      final recipient =
-          await _api.getVerifiedDestinationAccount(event.accountNumber);
-      emit(state.copyWith(
-        status: TransferStatus.accountValid,
-        destinationAccount: event.accountNumber,
-        destinationAccountName: recipient?['holder_name'],
-        destinationBankName: recipient?['bank_name'],
-        isDestinationVerified: true,
-        error: null,
-      ));
+      emit(state.copyWith(status: TransferStatus.accountValid));
     } else {
       emit(state.copyWith(
-          status: TransferStatus.error,
-          isDestinationVerified: false,
-          error:
-              'Cuenta no verificada. Usa una cuenta mock válida registrada.'));
-      AppLogger.warn(
-        'TRANSFER_DESTINATION_NOT_VERIFIED',
-        'Intento de transferencia a cuenta no verificada',
-      );
+          status: TransferStatus.error, error: 'Cuenta de destino inválida.'));
     }
   }
 
   void _onUpdateTransferDetails(
       UpdateTransferDetails event, Emitter<TransferState> emit) {
-    if (event.sourceAccount.type.name == 'credit') {
+    if (event.sourceAccount.balance < event.amount) {
       emit(state.copyWith(
-        status: TransferStatus.error,
-        error: 'No se permiten transferencias desde tarjeta de crédito.',
-      ));
-      return;
-    }
-
-    final availableAmount = event.sourceAccount.type.name == 'credit'
-        ? event.sourceAccount.remainingCredit
-        : event.sourceAccount.balance;
-
-    if (availableAmount < event.amount) {
-      emit(state.copyWith(
-          status: TransferStatus.error,
-          error: event.sourceAccount.type.name == 'credit'
-              ? 'Línea de crédito insuficiente.'
-              : 'Saldo insuficiente.'));
+          status: TransferStatus.error, error: 'Saldo insuficiente.'));
     } else {
       emit(state.copyWith(
         sourceAccount: event.sourceAccount,
@@ -83,13 +47,6 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       emit(state.copyWith(
         status: TransferStatus.error,
         error: 'Primero valida la cuenta de destino.',
-      ));
-      return;
-    }
-    if (!state.isDestinationVerified) {
-      emit(state.copyWith(
-        status: TransferStatus.error,
-        error: 'La cuenta de destino aún no está verificada.',
       ));
       return;
     }
@@ -113,19 +70,8 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       final token = await _api.requestSecurityToken();
       emit(state.copyWith(
           status: TransferStatus.tokenRequested, securityToken: token));
-    } catch (error, stackTrace) {
-      AppLogger.error(
-        'TRANSFER_TOKEN_REQUEST_FAIL',
-        'Error al solicitar token de transferencia',
-        error: error,
-        stackTrace: stackTrace,
-      );
-      emit(
-        state.copyWith(
-          status: TransferStatus.error,
-          error: 'No se pudo solicitar el token de seguridad.',
-        ),
-      );
+    } catch (e) {
+      emit(state.copyWith(status: TransferStatus.error, error: e.toString()));
     }
   }
 
@@ -145,36 +91,18 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       ));
       return;
     }
-    if (!state.isDestinationVerified) {
-      emit(state.copyWith(
-        status: TransferStatus.error,
-        error: 'No se puede transferir a una cuenta no verificada.',
-      ));
-      return;
-    }
 
     emit(state.copyWith(status: TransferStatus.processing));
     try {
       await _api.submitTransfer(
         beneficiary: state.destinationAccount!,
-        sourceAccountId: state.sourceAccount!.id,
+        sourceAccountId: state.sourceAccount?.id ?? '',
         amount: state.amount,
         token: event.token.trim(),
       );
       emit(state.copyWith(status: TransferStatus.success));
-    } catch (error, stackTrace) {
-      AppLogger.error(
-        'TRANSFER_SUBMIT_FAIL',
-        'Error al confirmar transferencia',
-        error: error,
-        stackTrace: stackTrace,
-      );
-      emit(
-        state.copyWith(
-          status: TransferStatus.error,
-          error: 'No se pudo completar la transferencia.',
-        ),
-      );
+    } catch (e) {
+      emit(state.copyWith(status: TransferStatus.error, error: e.toString()));
     }
   }
 

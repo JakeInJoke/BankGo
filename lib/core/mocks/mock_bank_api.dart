@@ -1,12 +1,13 @@
 import 'dart:async';
 
+import 'package:bank_go/core/constants/demo_auth_credentials.dart';
 import 'package:bank_go/core/errors/exceptions.dart';
 import 'package:bank_go/core/utils/app_logger.dart';
 import 'package:bank_go/features/transactions/domain/entities/transaction.dart';
 
 class MockBankApi {
-  static const String demoEmail = 'demo@bankgo.com';
-  static const String demoPassword = 'BankGo123!';
+  static const String demoDni = DemoAuthCredentials.dni;
+  static const String demoPassword = DemoAuthCredentials.password;
   static const Map<String, Map<String, String>> _verifiedDestinationAccounts = {
     '7711223344556677': {
       'holder_name': 'María García',
@@ -184,14 +185,14 @@ class MockBankApi {
   }
 
   Future<Map<String, dynamic>> login({
-    required String email,
+    required String dni,
     required String password,
     String? codeChallenge,
   }) async {
-    AppLogger.info('API_LOGIN', 'login() → email=[redacted]');
+    AppLogger.info('API_LOGIN', 'login() → dni=[redacted]');
     await Future.delayed(const Duration(milliseconds: 500));
 
-    if (email.trim().toLowerCase() != demoEmail || password != demoPassword) {
+    if (dni.trim() != demoDni || password != demoPassword) {
       AppLogger.warn('API_LOGIN_FAIL',
           'Credenciales inválidas para el usuario proporcionado');
       throw const UnauthorizedException(
@@ -211,7 +212,7 @@ class MockBankApi {
     return {
       'id': 'usr_demo_001',
       'name': 'Ana Gómez',
-      'email': demoEmail,
+      'email': 'demo@bankgo.com',
       'phone': '+52 55 1234 5678',
       'avatar_url': null,
       'token': 'mock-access-token-demo-001',

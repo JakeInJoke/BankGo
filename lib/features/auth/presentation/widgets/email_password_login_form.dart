@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:bank_go/core/constants/app_colors.dart';
@@ -17,13 +18,13 @@ class EmailPasswordLoginForm extends StatefulWidget {
 
 class _EmailPasswordLoginFormState extends State<EmailPasswordLoginForm> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _dniController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _dniController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -32,7 +33,7 @@ class _EmailPasswordLoginFormState extends State<EmailPasswordLoginForm> {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
             AuthLoginRequested(
-              email: _emailController.text.trim(),
+              dni: _dniController.text.trim(),
               password: _passwordController.text,
             ),
           );
@@ -47,12 +48,15 @@ class _EmailPasswordLoginFormState extends State<EmailPasswordLoginForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TextFormField(
-            controller: _emailController,
-            keyboardType: TextInputType.emailAddress,
+            controller: _dniController,
+            keyboardType: TextInputType.number,
+            maxLength: 8,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             decoration: InputDecoration(
-              labelText: AppStrings.emailLabel,
-              hintText: AppStrings.emailHint,
-              prefixIcon: const Icon(Icons.email_outlined),
+              labelText: AppStrings.dniLabel,
+              hintText: AppStrings.dniHint,
+              prefixIcon: const Icon(Icons.badge_outlined),
+              counterText: '',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
               ),
@@ -61,9 +65,8 @@ class _EmailPasswordLoginFormState extends State<EmailPasswordLoginForm> {
               if (value == null || value.isEmpty) {
                 return AppStrings.fieldRequired;
               }
-              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                  .hasMatch(value)) {
-                return AppStrings.invalidEmail;
+              if (value.length != 8 || !RegExp(r'^\d{8}$').hasMatch(value)) {
+                return AppStrings.invalidDni;
               }
               return null;
             },

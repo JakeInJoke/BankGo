@@ -5,7 +5,7 @@ import 'package:bank_go/features/auth/domain/entities/user.dart';
 
 abstract class AuthRepository {
   Future<Either<Failure, User>> login({
-    required String email,
+    required String dni,
     required String password,
   });
 
