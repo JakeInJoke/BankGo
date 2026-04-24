@@ -10,9 +10,12 @@ import 'package:bank_go/core/routes/app_router.dart';
 import 'package:bank_go/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:bank_go/features/auth/presentation/bloc/auth_event.dart';
 import 'package:bank_go/features/auth/presentation/bloc/auth_state.dart';
+import 'package:bank_go/features/accounts/presentation/bloc/card_bloc.dart';
 import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_state.dart';
+import 'package:bank_go/features/dashboard/presentation/bloc/simulation_bloc.dart';
+import 'package:bank_go/features/dashboard/presentation/pages/notifications_page.dart';
 import 'package:bank_go/features/dashboard/presentation/widgets/account_card.dart';
 import 'package:bank_go/features/dashboard/presentation/widgets/quick_actions_widget.dart';
 import 'package:bank_go/features/dashboard/presentation/widgets/transaction_tile.dart';
@@ -54,9 +57,50 @@ class _DashboardView extends StatelessWidget {
           },
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
+          BlocBuilder<SimulationBloc, SimulationState>(
+            builder: (context, simulationState) {
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const NotificationsPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  if (simulationState.unreadCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.error,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(minWidth: 18),
+                        child: Text(
+                          simulationState.unreadCount > 99
+                              ? '99+'
+                              : simulationState.unreadCount.toString(),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
           IconButton(
             icon: const Icon(Icons.logout_outlined),
@@ -90,15 +134,22 @@ class _DashboardView extends StatelessWidget {
   Widget _buildContent(BuildContext context, DashboardLoaded state) {
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(AppDimensions.paddingPage),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingPage,
+        vertical: AppDimensions.spaceLG,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AccountCard(summary: state.accountSummary),
-          const SizedBox(height: AppDimensions.spaceLG),
+          BlocProvider(
+            create: (_) => GetIt.instance<CardBloc>(),
+            child: AccountCard(summary: state.accountSummary, accountId: '1'),
+          ),
+          const SizedBox(height: AppDimensions.spaceXL),
           const QuickActionsWidget(),
-          const SizedBox(height: AppDimensions.spaceLG),
+          const SizedBox(height: AppDimensions.spaceXL),
           _buildRecentTransactions(context, state),
+          const SizedBox(height: AppDimensions.spaceLG),
         ],
       ),
     );

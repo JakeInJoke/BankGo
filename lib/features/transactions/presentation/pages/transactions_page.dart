@@ -105,13 +105,44 @@ class _TransactionsView extends StatelessWidget {
               horizontal: AppDimensions.paddingPage,
               vertical: AppDimensions.spaceSM,
             ),
-            itemCount: state.transactions.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (_, index) =>
-                _TransactionItem(transaction: state.transactions[index]),
+            itemCount: state.transactions.length + (state.hasMorePages ? 1 : 0),
+            separatorBuilder: (_, index) {
+              if (index == state.transactions.length)
+                return const SizedBox.shrink();
+              return const Divider(height: 1);
+            },
+            itemBuilder: (_, index) {
+              if (index == state.transactions.length) {
+                return _buildLoadMoreButton(context, state);
+              }
+              return _TransactionItem(transaction: state.transactions[index]);
+            },
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildLoadMoreButton(BuildContext context, TransactionsLoaded state) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spaceMD),
+      child: Center(
+        child: state.isLoadingMore
+            ? const SizedBox(
+                height: 40,
+                width: 40,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : ElevatedButton.icon(
+                onPressed: () {
+                  context.read<TransactionsBloc>().add(
+                        TransactionsLoadMore(type: state.activeFilter),
+                      );
+                },
+                icon: const Icon(Icons.download_rounded),
+                label: const Text('Cargar más'),
+              ),
+      ),
     );
   }
 
@@ -181,6 +212,19 @@ class _TransactionsView extends StatelessWidget {
                 Navigator.pop(sheetContext);
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.receipt_long_rounded,
+                  color: Color(0xFF0EA5E9)),
+              title: const Text('Pagos de servicios'),
+              onTap: () {
+                context.read<TransactionsBloc>().add(
+                      const TransactionsFilterChanged(
+                        type: TransactionType.service,
+                      ),
+                    );
+                Navigator.pop(sheetContext);
+              },
+            ),
           ],
         ),
       ),
@@ -210,6 +254,8 @@ class _FilterChips extends StatelessWidget {
           _chip(context, TransactionType.expense, AppStrings.expense),
           const SizedBox(width: AppDimensions.spaceXS),
           _chip(context, TransactionType.transfer, AppStrings.transfer),
+          const SizedBox(width: AppDimensions.spaceXS),
+          _chip(context, TransactionType.service, 'Servicios'),
         ],
       ),
     );
@@ -313,6 +359,8 @@ class _TransactionItem extends StatelessWidget {
         return AppColors.expense;
       case TransactionType.transfer:
         return AppColors.transfer;
+      case TransactionType.service:
+        return const Color(0xFF0EA5E9);
     }
   }
 
@@ -324,6 +372,8 @@ class _TransactionItem extends StatelessWidget {
         return Icons.arrow_upward_rounded;
       case TransactionType.transfer:
         return Icons.swap_horiz_rounded;
+      case TransactionType.service:
+        return Icons.receipt_long_rounded;
     }
   }
 }

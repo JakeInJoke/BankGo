@@ -1,85 +1,224 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
 import 'package:bank_go/core/constants/app_strings.dart';
 import 'package:bank_go/core/utils/currency_formatter.dart';
 import 'package:bank_go/features/dashboard/domain/entities/account_summary.dart';
+import 'package:bank_go/features/dashboard/presentation/bloc/simulation_bloc.dart';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:bank_go/features/accounts/presentation/bloc/card_bloc.dart';
+import 'package:bank_go/features/accounts/presentation/bloc/card_event.dart';
+import 'package:bank_go/features/accounts/presentation/bloc/card_state.dart';
 
 class AccountCard extends StatefulWidget {
   final AccountSummary summary;
+  final String accountId;
 
-  const AccountCard({super.key, required this.summary});
+  const AccountCard({super.key, required this.summary, this.accountId = '1'});
 
   @override
   State<AccountCard> createState() => _AccountCardState();
 }
 
 class _AccountCardState extends State<AccountCard> {
-  bool _isCardEnabled = true;
-
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        AnimatedOpacity(
-          duration: const Duration(milliseconds: 300),
-          opacity: _isCardEnabled ? 1.0 : 0.6,
-          child: Container(
-            height: AppDimensions.accountCardHeight,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: _isCardEnabled
-                    ? [AppColors.primary, AppColors.primaryDark]
-                    : [AppColors.grey400, AppColors.grey600],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+    return BlocConsumer<CardBloc, CardState>(
+      listener: (context, state) {
+        if (state.error != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.error!)),
+          );
+        }
+      },
+      builder: (context, state) {
+        final isCardEnabled = !state.isFrozen;
+
+        return Column(
+          children: [
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 300),
+              opacity: isCardEnabled ? 1.0 : 0.6,
+              child: Container(
+                height: AppDimensions.accountCardHeight,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isCardEnabled
+                        ? [AppColors.primary, AppColors.primaryDark]
+                        : [AppColors.grey400, AppColors.grey600],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (isCardEnabled
+                              ? AppColors.primary
+                              : AppColors.grey500)
+                          .withValues(alpha: 0.4),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(AppDimensions.paddingCard),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildCardHeader(context),
+                    const Spacer(),
+                    _buildBalance(context),
+                    const SizedBox(height: AppDimensions.spaceXS),
+                    _buildAccountInfo(context),
+                  ],
+                ),
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
-              boxShadow: [
-                BoxShadow(
-                  color: (_isCardEnabled ? AppColors.primary : AppColors.grey500)
-                      .withValues(alpha: 0.4),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+            ),
+            const SizedBox(height: AppDimensions.spaceMD),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  isCardEnabled
+                      ? "Estado: Tarjeta Activa"
+                      : "Estado: Tarjeta Apagada",
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                Switch(
+                  value: isCardEnabled,
+                  onChanged: (value) {
+                    _showFreezeTokenRequest(context, !value);
+                  },
+                  activeColor: AppColors.primary,
+                  inactiveThumbColor: AppColors.error,
+                  inactiveTrackColor: AppColors.error.withValues(alpha: 0.2),
                 ),
               ],
             ),
-            padding: const EdgeInsets.all(AppDimensions.paddingCard),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildCardHeader(context),
-                const Spacer(),
-                _buildBalance(context),
-                const SizedBox(height: AppDimensions.spaceXS),
-                _buildAccountInfo(context),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spaceMD),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              "Status: Card Active",
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            Switch(
-              value: _isCardEnabled,
-              onChanged: (value) {
-                setState(() {
-                  _isCardEnabled = value;
-                });
-              },
-              activeColor: AppColors.primary,
-              inactiveThumbColor: AppColors.error,
-              inactiveTrackColor: AppColors.error.withValues(alpha: 0.2),
-            ),
           ],
-        ),
-      ],
+        );
+      },
+    );
+  }
+
+  void _showFreezeTokenRequest(BuildContext context, bool freeze) {
+    context.read<CardBloc>().add(RequestFreezeToken(widget.accountId));
+    context.read<SimulationBloc>().add(AddUserActionNotification(
+          title: 'Solicitud de token',
+          message:
+              '${DateTime.now().toString().substring(0, 16)} — Se solicitó token para ${freeze ? 'congelar' : 'activar'} tarjeta principal.',
+          type: NotificationType.security,
+        ));
+    final tokenController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (modalContext) {
+        return BlocProvider.value(
+          value: context.read<CardBloc>(),
+          child: BlocConsumer<CardBloc, CardState>(
+            listenWhen: (previous, current) =>
+                previous.securityToken != current.securityToken ||
+                previous.isLoading != current.isLoading ||
+                previous.error != current.error,
+            listener: (context, state) {
+              if (state.securityToken != null && tokenController.text.isEmpty) {
+                // Auto-fill and Toast
+                tokenController.text = state.securityToken!;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Icon(Icons.notifications_active,
+                            color: Colors.white),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Token recibido: ${state.securityToken!.replaceAll(RegExp(r'.'), '*')}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: AppColors.primary,
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 4),
+                  ),
+                );
+              }
+              if (!state.isLoading &&
+                  state.error == null &&
+                  state.securityToken == null) {
+                Navigator.of(modalContext).pop();
+              }
+            },
+            builder: (context, state) {
+              return Padding(
+                padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                    left: 24,
+                    right: 24,
+                    top: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(freeze ? 'Congelar Tarjeta' : 'Activar Tarjeta',
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 16),
+                    Text(
+                        'Ingresa el token para ${freeze ? 'congelar' : 'activar'} tu tarjeta.'),
+                    const SizedBox(height: 8),
+                    if (state.securityToken != null)
+                      const Text('Token recibido y auto-completado (protegido)',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary))
+                    else
+                      const Text('Generando token...',
+                          style: TextStyle(color: AppColors.grey500)),
+                    const SizedBox(height: 24),
+                    TextField(
+                      controller: tokenController,
+                      obscureText: true,
+                      maxLength: 6,
+                      decoration: const InputDecoration(
+                        labelText: 'Token de seguridad',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.lock_outline),
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: state.isLoading || state.securityToken == null
+                          ? null
+                          : () {
+                              context.read<CardBloc>().add(ToggleCardFreeze(
+                                  widget.accountId, freeze, tokenController.text));
+                            },
+                      child: state.isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Text('Confirmar'),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -119,19 +258,22 @@ class _AccountCardState extends State<AccountCard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppStrings.totalBalance,
+          "Saldo en Cuenta",
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: AppColors.white.withValues(alpha: 0.7),
               ),
         ),
         const SizedBox(height: AppDimensions.spaceXXS),
-        Text(
-          CurrencyFormatter.format(widget.summary.totalBalance),
-          style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                color: AppColors.white,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1,
-              ),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            CurrencyFormatter.format(widget.summary.availableBalance),
+            style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  color: AppColors.white,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1,
+                ),
+          ),
         ),
       ],
     );
@@ -141,16 +283,22 @@ class _AccountCardState extends State<AccountCard> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          widget.summary.accountNumber,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.white.withValues(alpha: 0.9),
-                letterSpacing: 2,
-                fontFamily: 'Courier',
-              ),
+        Flexible(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              widget.summary.accountNumber,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.white.withValues(alpha: 0.9),
+                    letterSpacing: 2,
+                    fontFamily: 'Courier',
+                  ),
+            ),
+          ),
         ),
+        const SizedBox(width: AppDimensions.spaceSM),
         Image.network(
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1280px-Mastercard-logo.svg.png',
+          'https://www.svgrepo.com/show/343636/mastercard.svg',
           height: 30,
           errorBuilder: (_, __, ___) => const Icon(
             Icons.credit_card,

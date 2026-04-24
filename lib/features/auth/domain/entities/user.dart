@@ -7,6 +7,10 @@ class User extends Equatable {
   final String? phone;
   final String? avatarUrl;
   final String? token;
+  final String? accessToken;
+  final String? idToken;
+  final String? tokenType;
+  final int? expiresIn;
 
   const User({
     required this.id,
@@ -15,6 +19,10 @@ class User extends Equatable {
     this.phone,
     this.avatarUrl,
     this.token,
+    this.accessToken,
+    this.idToken,
+    this.tokenType,
+    this.expiresIn,
   });
 
   User copyWith({
@@ -24,6 +32,10 @@ class User extends Equatable {
     String? phone,
     String? avatarUrl,
     String? token,
+    String? accessToken,
+    String? idToken,
+    String? tokenType,
+    int? expiresIn,
   }) {
     return User(
       id: id ?? this.id,
@@ -32,9 +44,24 @@ class User extends Equatable {
       phone: phone ?? this.phone,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       token: token ?? this.token,
+      accessToken: accessToken ?? this.accessToken,
+      idToken: idToken ?? this.idToken,
+      tokenType: tokenType ?? this.tokenType,
+      expiresIn: expiresIn ?? this.expiresIn,
     );
   }
 
   @override
-  List<Object?> get props => [id, name, email, phone, avatarUrl, token];
+  List<Object?> get props => [
+        id,
+        name,
+        email,
+        phone,
+        avatarUrl,
+        token,
+        accessToken,
+        idToken,
+        tokenType,
+        expiresIn,
+      ];
 }

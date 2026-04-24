@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
 import 'package:bank_go/core/constants/app_strings.dart';
 import 'package:bank_go/core/routes/app_router.dart';
-import 'package:bank_go/core/widgets/app_alert.dart';
+import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:bank_go/features/dashboard/presentation/bloc/dashboard_event.dart';
 
 class QuickActionsWidget extends StatelessWidget {
   const QuickActionsWidget({super.key});
-
 
   @override
   Widget build(BuildContext context) {
@@ -29,38 +30,32 @@ class QuickActionsWidget extends StatelessWidget {
               label: AppStrings.sendMoney,
               icon: Icons.send_rounded,
               color: AppColors.primary,
-              onTap: () {
-                // Simulate a transfer confirmation flow
-                showAppAlert(
-                  context: context,
-                  title: "Transfer Successful",
-                  message: "You have successfully sent \$150.00 to John Doe.",
-                  actionLabel: "View Receipt",
-                  onActionPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, AppRouter.transactions);
-                  },
-                );
+              onTap: () async {
+                final result =
+                    await Navigator.pushNamed(context, '/transfer-wizard');
+                if (result == true && context.mounted) {
+                  context
+                      .read<DashboardBloc>()
+                      .add(const DashboardRefreshRequested());
+                }
               },
             ),
             _QuickActionButton(
-              label: "Pay Services",
+              label: "Servicios",
               icon: Icons.receipt_long_rounded,
               color: AppColors.warning,
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Service Payment feature coming soon")),
-                );
+              onTap: () async {
+                final result =
+                    await Navigator.pushNamed(context, '/service-payment');
+                if (result == true && context.mounted) {
+                  context
+                      .read<DashboardBloc>()
+                      .add(const DashboardRefreshRequested());
+                }
               },
             ),
             _QuickActionButton(
-              label: "Cards",
-              icon: Icons.credit_card_rounded,
-              color: AppColors.secondary,
-              onTap: () => Navigator.pushNamed(context, AppRouter.accounts),
-            ),
-            _QuickActionButton(
-              label: "History",
+              label: "Historial",
               icon: Icons.history_rounded,
               color: AppColors.accent,
               onTap: () => Navigator.pushNamed(context, AppRouter.transactions),
