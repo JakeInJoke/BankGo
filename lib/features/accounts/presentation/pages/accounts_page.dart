@@ -13,7 +13,6 @@ import 'package:bank_go/features/accounts/data/models/account_model.dart';
 import 'package:bank_go/features/accounts/domain/entities/account.dart';
 import 'package:bank_go/features/dashboard/presentation/bloc/simulation_bloc.dart';
 import 'package:bank_go/features/transactions/data/models/transaction_model.dart';
-import 'package:bank_go/features/transactions/domain/entities/transaction.dart';
 import 'package:bank_go/injection_container.dart';
 
 class AccountsPage extends StatefulWidget {
@@ -370,7 +369,6 @@ class _AccountPageContent extends StatefulWidget {
 }
 
 class _AccountPageContentState extends State<_AccountPageContent> {
-  bool _isRevealed = false;
   List<TransactionModel> _transactions = [];
   bool _isLoadingTx = true;
 
@@ -403,154 +401,6 @@ class _AccountPageContentState extends State<_AccountPageContent> {
       if (!mounted) return;
       setState(() => _isLoadingTx = false);
     }
-  }
-
-  void _showTokenReveal(BuildContext outerContext) {
-    final tokenController = TextEditingController();
-    String? receivedToken;
-    bool isRequesting = true;
-    String? requestError;
-    void Function(void Function())? modalSetState;
-
-    outerContext.read<SimulationBloc>().add(AddUserActionNotification(
-          title: 'Solicitud de token',
-          message:
-              '${DateTime.now().toString().substring(0, 16)} — Se solicitó token para ver datos de ${widget.account.alias}.',
-          type: NotificationType.security,
-        ));
-
-    Future<void> requestToken() async {
-      try {
-        final token = await sl<MockBankApi>()
-            .requestSecurityToken(accountId: widget.account.id);
-        if (!mounted) return;
-        if (modalSetState != null) {
-          modalSetState!(() {
-            receivedToken = token;
-            tokenController.text = token;
-            isRequesting = false;
-            requestError = null;
-          });
-        } else {
-          receivedToken = token;
-          tokenController.text = token;
-          isRequesting = false;
-          requestError = null;
-        }
-      } catch (_) {
-        if (!mounted) return;
-        if (modalSetState != null) {
-          modalSetState!(() {
-            isRequesting = false;
-            requestError = 'No se pudo generar el token.';
-          });
-        } else {
-          isRequesting = false;
-          requestError = 'No se pudo generar el token.';
-        }
-      }
-    }
-
-    requestToken();
-
-    showModalBottomSheet(
-      context: outerContext,
-      isScrollControlled: true,
-      builder: (modalContext) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            modalSetState = setModalState;
-
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-                left: 24,
-                right: 24,
-                top: 24,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Verificación de Seguridad',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Ingresa el token para ver los datos de ${widget.account.alias}.',
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  if (isRequesting)
-                    const Text('Generando token...',
-                        style: TextStyle(color: AppColors.grey500))
-                  else if (receivedToken != null)
-                    const Text(
-                      'Token auto-completado',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary),
-                    )
-                  else
-                    Text(
-                      requestError ?? 'No se pudo generar el token.',
-                      style: const TextStyle(color: AppColors.error),
-                    ),
-                  if (!isRequesting && receivedToken == null)
-                    TextButton.icon(
-                      onPressed: () {
-                        setModalState(() {
-                          isRequesting = true;
-                          requestError = null;
-                        });
-                        requestToken();
-                      },
-                      icon: const Icon(Icons.refresh_rounded),
-                      label: const Text('Reintentar token'),
-                    ),
-                  const SizedBox(height: 24),
-                  TextField(
-                    controller: tokenController,
-                    obscureText: true,
-                    maxLength: 6,
-                    decoration: const InputDecoration(
-                      labelText: 'Token de seguridad',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.lock_outline),
-                    ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: receivedToken == null
-                        ? null
-                        : () {
-                            if (tokenController.text == receivedToken) {
-                              Navigator.pop(modalContext);
-                              setState(() => _isRevealed = true);
-                              Future.delayed(_revealDuration, () {
-                                if (mounted) {
-                                  setState(() => _isRevealed = false);
-                                }
-                              });
-                            } else {
-                              ScaffoldMessenger.of(outerContext).showSnackBar(
-                                const SnackBar(
-                                    content: Text('Token incorrecto.')),
-                              );
-                            }
-                          },
-                    child: const Text('Validar'),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
   }
 
   @override

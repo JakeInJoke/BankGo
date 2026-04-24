@@ -3,14 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bank_go/core/constants/app_colors.dart';
 import 'package:bank_go/core/constants/app_dimensions.dart';
-import 'package:bank_go/core/mocks/mock_bank_api.dart';
 import 'package:bank_go/core/utils/currency_formatter.dart';
 import 'package:bank_go/features/accounts/presentation/bloc/card_bloc.dart';
 import 'package:bank_go/features/accounts/presentation/bloc/card_event.dart';
 import 'package:bank_go/features/accounts/presentation/bloc/card_state.dart';
 import 'package:bank_go/features/dashboard/presentation/bloc/simulation_bloc.dart';
 import 'package:bank_go/features/accounts/domain/entities/account.dart';
-import 'package:bank_go/injection_container.dart';
 
 class CardDetailsPage extends StatelessWidget {
   final Account account;
