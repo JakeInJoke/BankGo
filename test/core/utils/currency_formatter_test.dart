@@ -6,18 +6,18 @@ void main() {
     group('format', () {
       test('formats positive amount with peso sign', () {
         final result = CurrencyFormatter.format(1234.56);
-        expect(result, contains('1,234.56'));
-        expect(result, startsWith('\$'));
+        expect(result, contains('1.234,56'));
+        expect(result, contains('S/'));
       });
 
       test('formats zero correctly', () {
         final result = CurrencyFormatter.format(0);
-        expect(result, contains('0.00'));
+        expect(result, contains('0,00'));
       });
 
       test('formats large amounts', () {
         final result = CurrencyFormatter.format(1000000);
-        expect(result, contains('1,000,000'));
+        expect(result, contains('1.000.000'));
       });
     });
 
@@ -34,9 +34,9 @@ void main() {
     });
 
     group('formatCompact', () {
-      test('formats thousands with K', () {
+      test('formats thousands with locale compact suffix', () {
         final result = CurrencyFormatter.formatCompact(5000);
-        expect(result, contains('K'));
+        expect(result, contains('MIL'));
       });
     });
   });

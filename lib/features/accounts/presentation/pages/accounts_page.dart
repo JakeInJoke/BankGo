@@ -220,8 +220,7 @@ class _AccountCardState extends State<_AccountCard> {
                         ),
                   ),
                 ),
-                if (isPrimary)
-                  const SizedBox(width: AppDimensions.spaceSM),
+                if (isPrimary) const SizedBox(width: AppDimensions.spaceSM),
                 if (isPrimary)
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -267,8 +266,8 @@ class _AccountCardState extends State<_AccountCard> {
 
     Future<void> requestToken() async {
       try {
-        final token =
-            await sl<MockBankApi>().requestSecurityToken(accountId: widget.account.id);
+        final token = await sl<MockBankApi>()
+            .requestSecurityToken(accountId: widget.account.id);
         if (!mounted) return;
         if (modalSetState != null) {
           modalSetState!(() {
