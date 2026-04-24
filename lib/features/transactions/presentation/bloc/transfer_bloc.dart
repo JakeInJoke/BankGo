@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bank_go/core/mocks/mock_bank_api.dart';
+import 'package:bank_go/core/utils/app_logger.dart';
 import 'package:bank_go/features/transactions/presentation/bloc/transfer_event_state.dart';
 
 class TransferBloc extends Bloc<TransferEvent, TransferState> {
@@ -40,11 +41,23 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
           isDestinationVerified: false,
           error:
               'Cuenta no verificada. Usa una cuenta mock válida registrada.'));
+      AppLogger.warn(
+        'TRANSFER_DESTINATION_NOT_VERIFIED',
+        'Intento de transferencia a cuenta no verificada',
+      );
     }
   }
 
   void _onUpdateTransferDetails(
       UpdateTransferDetails event, Emitter<TransferState> emit) {
+    if (event.sourceAccount.type.name == 'credit') {
+      emit(state.copyWith(
+        status: TransferStatus.error,
+        error: 'No se permiten transferencias desde tarjeta de crédito.',
+      ));
+      return;
+    }
+
     final availableAmount = event.sourceAccount.type.name == 'credit'
         ? event.sourceAccount.remainingCredit
         : event.sourceAccount.balance;
@@ -100,8 +113,19 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       final token = await _api.requestSecurityToken();
       emit(state.copyWith(
           status: TransferStatus.tokenRequested, securityToken: token));
-    } catch (e) {
-      emit(state.copyWith(status: TransferStatus.error, error: e.toString()));
+    } catch (error, stackTrace) {
+      AppLogger.error(
+        'TRANSFER_TOKEN_REQUEST_FAIL',
+        'Error al solicitar token de transferencia',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      emit(
+        state.copyWith(
+          status: TransferStatus.error,
+          error: 'No se pudo solicitar el token de seguridad.',
+        ),
+      );
     }
   }
 
@@ -138,8 +162,19 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
         token: event.token.trim(),
       );
       emit(state.copyWith(status: TransferStatus.success));
-    } catch (e) {
-      emit(state.copyWith(status: TransferStatus.error, error: e.toString()));
+    } catch (error, stackTrace) {
+      AppLogger.error(
+        'TRANSFER_SUBMIT_FAIL',
+        'Error al confirmar transferencia',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      emit(
+        state.copyWith(
+          status: TransferStatus.error,
+          error: 'No se pudo completar la transferencia.',
+        ),
+      );
     }
   }
 

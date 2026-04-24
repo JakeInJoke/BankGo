@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -6,6 +7,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'package:bank_go/core/routes/app_router.dart';
 import 'package:bank_go/core/theme/app_theme.dart';
+import 'package:bank_go/core/utils/app_logger.dart';
 import 'package:bank_go/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:bank_go/features/dashboard/presentation/bloc/simulation_bloc.dart';
 import 'package:bank_go/injection_container.dart' as di;
@@ -14,6 +16,26 @@ import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  FlutterError.onError = (details) {
+    AppLogger.error(
+      'SYS_FLUTTER_ERROR',
+      details.exceptionAsString(),
+      error: details.exception,
+      stackTrace: details.stack,
+    );
+  };
+
+  ui.PlatformDispatcher.instance.onError = (error, stack) {
+    AppLogger.error(
+      'SYS_PLATFORM_ERROR',
+      'Error de plataforma no controlado',
+      error: error,
+      stackTrace: stack,
+    );
+    return true;
+  };
+
   await initializeDateFormatting('es_PE', null);
   await di.init();
   runApp(const BankGoApp());

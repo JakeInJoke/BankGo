@@ -43,7 +43,6 @@
 # Obfuscation options
 -obfuscationdictionary obfuscation_dictionary.txt
 -packageobfuscationdictionary obfuscation_dictionary.txt
--classnamestrategy com.android.tools.r8.shaking.ProguardClassNameObfuscationStrategy
 
 # Optimization passes
 -optimizationpasses 5

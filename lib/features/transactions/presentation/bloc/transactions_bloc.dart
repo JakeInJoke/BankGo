@@ -6,7 +6,7 @@ import 'package:bank_go/features/transactions/presentation/bloc/transactions_sta
 
 class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   final GetTransactionsUseCase getTransactionsUseCase;
-  static const int _pageSize = 5;
+  static const int _pageSize = 10;
 
   TransactionsBloc({required this.getTransactionsUseCase})
       : super(const TransactionsInitial()) {

@@ -42,7 +42,10 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
       final response = await sl<MockBankApi>().getAccounts();
       if (!mounted) return;
       setState(() {
-        _accounts = response.map(AccountModel.fromJson).toList();
+        _accounts = response
+            .map(AccountModel.fromJson)
+            .where((account) => account.type != AccountType.credit)
+            .toList();
         _isLoadingAccounts = false;
       });
     } catch (_) {
@@ -81,7 +84,7 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
                 _currentStep == 0) {
               _nextPage();
             } else if (state.status == TransferStatus.tokenRequested &&
-                _currentStep == 1) {
+                _currentStep == 2) {
               if (state.securityToken != null) {
                 _tokenController.text = state.securityToken!;
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -131,6 +134,7 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
                       _buildStep1(context, state),
                       _buildStep2(context, state),
                       _buildStep3(context, state),
+                      _buildStep4(context, state),
                     ],
                   ),
                 ),
@@ -149,7 +153,7 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
         vertical: AppDimensions.spaceMD,
       ),
       child: Row(
-        children: List.generate(3, (index) {
+        children: List.generate(4, (index) {
           return Expanded(
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
@@ -169,99 +173,83 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
   }
 
   Widget _buildStep1(BuildContext context, TransferState state) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingPage,
-        vertical: AppDimensions.spaceLG,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Text('¿A quién deseas transferir?',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          const SizedBox(height: AppDimensions.spaceSM),
-          const Text(
-            'Ingresa el número de cuenta o tarjeta (16 dígitos) del destinatario.',
-            style: TextStyle(color: AppColors.grey500),
-          ),
-          const SizedBox(height: AppDimensions.spaceMD),
-          Container(
-            padding: const EdgeInsets.all(AppDimensions.spaceMD),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.15),
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        padding: EdgeInsets.only(
+          left: AppDimensions.paddingPage,
+          right: AppDimensions.paddingPage,
+          top: AppDimensions.spaceLG,
+          bottom:
+              MediaQuery.of(context).viewInsets.bottom + AppDimensions.spaceLG,
+        ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+              minHeight: constraints.maxHeight - AppDimensions.spaceLG),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text('¿A quién deseas transferir?',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              const SizedBox(height: AppDimensions.spaceSM),
+              const Text(
+                'Ingresa el número de cuenta o tarjeta (16 dígitos) del destinatario.',
+                style: TextStyle(color: AppColors.grey500),
               ),
-            ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Cuenta mock verificada para pruebas',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+              const SizedBox(height: AppDimensions.spaceXXL),
+              TextField(
+                controller: _accountController,
+                decoration: InputDecoration(
+                  labelText: 'Número de cuenta',
+                  prefixIcon: const Icon(Icons.account_balance_outlined),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                  ),
+                  hintText: '0000 0000 0000 0000',
+                ),
+                keyboardType: TextInputType.number,
+                maxLength: 16,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+              const SizedBox(height: AppDimensions.spaceXL),
+              ElevatedButton(
+                onPressed: state.status == TransferStatus.validatingAccount
+                    ? null
+                    : () {
+                        if (_accountController.text.length < 16) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('El número debe tener 16 dígitos'),
+                            ),
+                          );
+                          return;
+                        }
+                        context.read<TransferBloc>().add(
+                            UpdateDestinationAccount(_accountController.text));
+                      },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                SizedBox(height: AppDimensions.spaceXS),
-                Text('7711223344556677 · María García · Banco del Pacífico'),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppDimensions.spaceXXL),
-          TextField(
-            controller: _accountController,
-            decoration: InputDecoration(
-              labelText: 'Número de cuenta',
-              prefixIcon: const Icon(Icons.account_balance_outlined),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-              ),
-              hintText: '0000 0000 0000 0000',
-            ),
-            keyboardType: TextInputType.number,
-            maxLength: 16,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          ),
-          const Spacer(),
-          ElevatedButton(
-            onPressed: state.status == TransferStatus.validatingAccount
-                ? null
-                : () {
-                    if (_accountController.text.length < 16) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('El número debe tener 16 dígitos'),
+                child: state.status == TransferStatus.validatingAccount
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
                         ),
-                      );
-                      return;
-                    }
-                    context
-                        .read<TransferBloc>()
-                        .add(UpdateDestinationAccount(_accountController.text));
-                  },
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                      )
+                    : const Text(
+                        'Validar Cuenta',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
               ),
-            ),
-            child: state.status == TransferStatus.validatingAccount
-                ? const SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Text(
-                    'Validar Cuenta',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -296,8 +284,7 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
                   padding: const EdgeInsets.all(AppDimensions.spaceMD),
                   decoration: BoxDecoration(
                     color: AppColors.success.withValues(alpha: 0.08),
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.radiusMD),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
                     border: Border.all(
                       color: AppColors.success.withValues(alpha: 0.2),
                     ),
@@ -312,7 +299,8 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              state.destinationAccountName ?? 'Destinatario verificado',
+                              state.destinationAccountName ??
+                                  'Destinatario verificado',
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
@@ -348,9 +336,7 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
                       (a) => DropdownMenuItem(
                         value: a.id,
                         child: Text(
-                          a.type == AccountType.credit
-                              ? '${a.alias} (Disponible ${CurrencyFormatter.format(a.remainingCredit)})'
-                              : '${a.alias} (${CurrencyFormatter.format(a.balance)})',
+                          '${a.alias} (${CurrencyFormatter.format(a.balance)})',
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -436,7 +422,7 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
                   context
                       .read<TransferBloc>()
                       .add(UpdateTransferDetails(account, amount));
-                  context.read<TransferBloc>().add(const RequestToken());
+                  _nextPage();
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 18),
@@ -457,6 +443,108 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
   }
 
   Widget _buildStep3(BuildContext context, TransferState state) {
+    final sourceAccount = state.sourceAccount;
+    final sourceLabel = sourceAccount?.alias ?? 'Cuenta no seleccionada';
+    final sourceNumber = sourceAccount?.maskedNumber ?? '';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingPage,
+        vertical: AppDimensions.spaceLG,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Confirmación de transferencia',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: AppDimensions.spaceSM),
+          const Text(
+            'Revisa los datos antes de solicitar el token de seguridad.',
+            style: TextStyle(color: AppColors.grey500),
+          ),
+          const SizedBox(height: AppDimensions.spaceXL),
+          Container(
+            padding: const EdgeInsets.all(AppDimensions.spaceMD),
+            decoration: BoxDecoration(
+              color: AppColors.grey100,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+              border: Border.all(color: AppColors.grey200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _SummaryRow(label: 'Desde', value: sourceLabel),
+                if (sourceNumber.isNotEmpty)
+                  _SummaryRow(label: 'Nro. origen', value: sourceNumber),
+                _SummaryRow(
+                  label: 'Hacia',
+                  value: state.destinationAccountName ?? 'Destinatario',
+                ),
+                _SummaryRow(
+                  label: 'Cuenta destino',
+                  value: state.destinationAccount ?? '-',
+                ),
+                _SummaryRow(
+                  label: 'Banco',
+                  value: state.destinationBankName ?? 'Banco mock',
+                ),
+                _SummaryRow(
+                  label: 'Monto',
+                  value: CurrencyFormatter.format(state.amount),
+                  isAmount: true,
+                ),
+              ],
+            ),
+          ),
+          const Spacer(),
+          OutlinedButton(
+            onPressed: () {
+              _pageController.previousPage(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+              setState(() => _currentStep--);
+            },
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            child: const Text('Editar datos'),
+          ),
+          const SizedBox(height: AppDimensions.spaceSM),
+          ElevatedButton(
+            onPressed: state.status == TransferStatus.processing
+                ? null
+                : () {
+                    context.read<TransferBloc>().add(const RequestToken());
+                  },
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: state.status == TransferStatus.processing
+                ? const SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Text(
+                    'Solicitar token',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStep4(BuildContext context, TransferState state) {
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
         padding: EdgeInsets.only(
@@ -585,6 +673,48 @@ class _TransferWizardPageState extends State<TransferWizardPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SummaryRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool isAmount;
+
+  const _SummaryRow({
+    required this.label,
+    required this.value,
+    this.isAmount = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spaceXS),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.grey500),
+            ),
+          ),
+          const SizedBox(width: AppDimensions.spaceSM),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                fontWeight: isAmount ? FontWeight.bold : FontWeight.w600,
+                color: isAmount ? AppColors.primary : null,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

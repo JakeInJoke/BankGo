@@ -45,6 +45,43 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Prepare ProGuard dictionary for CI
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p android/app
+          if [[ ! -f android/app/obfuscation_dictionary.txt ]]; then
+            cat > android/app/obfuscation_dictionary.txt <<'EOF'
+            alpha
+            bravo
+            charlie
+            delta
+            echo
+            foxtrot
+            golf
+            hotel
+            india
+            juliet
+            kilo
+            lima
+            mike
+            november
+            oscar
+            papa
+            quebec
+            romeo
+            sierra
+            tango
+            uniform
+            victor
+            whiskey
+            xray
+            yankee
+            zulu
+            EOF
+          fi
+          test -f android/app/obfuscation_dictionary.txt
+
       - name: Analyze project source
         run: flutter analyze
 
@@ -140,6 +177,43 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Prepare ProGuard dictionary for release build
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p android/app
+          if [[ ! -f android/app/obfuscation_dictionary.txt ]]; then
+            cat > android/app/obfuscation_dictionary.txt <<'EOF'
+            alpha
+            bravo
+            charlie
+            delta
+            echo
+            foxtrot
+            golf
+            hotel
+            india
+            juliet
+            kilo
+            lima
+            mike
+            november
+            oscar
+            papa
+            quebec
+            romeo
+            sierra
+            tango
+            uniform
+            victor
+            whiskey
+            xray
+            yankee
+            zulu
+            EOF
+          fi
+          test -f android/app/obfuscation_dictionary.txt
 
       - name: Decode keystore (from secrets)
         run: |

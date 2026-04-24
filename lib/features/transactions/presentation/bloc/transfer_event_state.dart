@@ -31,7 +31,15 @@ class ResetTransfer extends TransferEvent {
   const ResetTransfer();
 }
 
-enum TransferStatus { initial, validatingAccount, accountValid, error, processing, success, tokenRequested }
+enum TransferStatus {
+  initial,
+  validatingAccount,
+  accountValid,
+  error,
+  processing,
+  success,
+  tokenRequested
+}
 
 class TransferState extends Equatable {
   final TransferStatus status;
@@ -70,10 +78,10 @@ class TransferState extends Equatable {
     return TransferState(
       status: status ?? this.status,
       destinationAccount: destinationAccount ?? this.destinationAccount,
-        destinationAccountName:
+      destinationAccountName:
           destinationAccountName ?? this.destinationAccountName,
-        destinationBankName: destinationBankName ?? this.destinationBankName,
-        isDestinationVerified:
+      destinationBankName: destinationBankName ?? this.destinationBankName,
+      isDestinationVerified:
           isDestinationVerified ?? this.isDestinationVerified,
       sourceAccount: sourceAccount ?? this.sourceAccount,
       amount: amount ?? this.amount,

@@ -43,16 +43,13 @@ class CardDetailsPage extends StatelessWidget {
               children: [
                 _buildCardVisual(context, state),
                 const SizedBox(height: AppDimensions.spaceXL),
-                _buildAccountBalanceSection(context),
+                account.type == AccountType.credit
+                    ? _buildCreditSection(context)
+                    : _buildAccountBalanceSection(context),
                 const SizedBox(height: AppDimensions.spaceLG),
                 _buildStatusSection(context, state),
-                const SizedBox(height: AppDimensions.spaceLG),
-                if (account.type == AccountType.credit)
-                  _buildCreditSection(context),
                 const SizedBox(height: AppDimensions.spaceXL),
                 _buildActions(context, state),
-                const SizedBox(height: AppDimensions.spaceXL),
-                _buildOperationsByAccount(context),
               ],
             ),
           );
@@ -177,17 +174,19 @@ class CardDetailsPage extends StatelessWidget {
         border: Border.all(color: AppColors.grey200),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Estado de la Tarjeta',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('Apágala para evitar compras no autorizadas',
-                  style: TextStyle(fontSize: 12, color: AppColors.grey500)),
-            ],
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Estado de la Tarjeta',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('Apágala para evitar compras no autorizadas',
+                    style: TextStyle(fontSize: 12, color: AppColors.grey500)),
+              ],
+            ),
           ),
+          const SizedBox(width: AppDimensions.spaceSM),
           Switch(
             value: !state.isFrozen,
             onChanged: (val) {
@@ -517,67 +516,6 @@ class CardDetailsPage extends StatelessWidget {
                 ),
               );
             },
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildOperationsByAccount(BuildContext context) {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: sl<MockBankApi>()
-          .getTransactionsForAccount(accountId: account.id, limit: 8),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        final transactions = snapshot.data ?? const [];
-        if (transactions.isEmpty) {
-          return Container(
-            padding: const EdgeInsets.all(AppDimensions.spaceMD),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-              border: Border.all(color: AppColors.grey200),
-            ),
-            child: const Text('No hay operaciones para esta cuenta.'),
-          );
-        }
-
-        return Container(
-          padding: const EdgeInsets.all(AppDimensions.spaceMD),
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-            border: Border.all(color: AppColors.grey200),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Operaciones de esta cuenta',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              const SizedBox(height: AppDimensions.spaceSM),
-              ...transactions.map((tx) {
-                final amount = (tx['amount'] as num?)?.toDouble() ?? 0;
-                final title = tx['title'] as String? ?? 'Operación';
-                final subtitle = tx['subtitle'] as String? ?? '';
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(title),
-                  subtitle: subtitle.isEmpty ? null : Text(subtitle),
-                  trailing: Text(
-                    CurrencyFormatter.format(amount),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: amount < 0 ? AppColors.error : AppColors.success,
-                    ),
-                  ),
-                );
-              }),
-            ],
           ),
         );
       },
